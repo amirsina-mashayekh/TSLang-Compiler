@@ -23,5 +23,14 @@ namespace Tokenizer
             Line = line;
             Column = column;
         }
+
+        public override string? ToString()
+        {
+            return
+                Value + ", " +
+                Type + ", " +
+                Line + ", " +
+                Column;
+        }
     }
 }

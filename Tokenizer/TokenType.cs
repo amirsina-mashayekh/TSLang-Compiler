@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -42,34 +43,35 @@ namespace Tokenizer
             return Name;
         }
 
-        public static HashSet<TokenType> TokenTypes = new()
+        public static ReadOnlyCollection<TokenType> TokenTypes = new(new List<TokenType>
         {
-            new TokenType("kw_for", @"for"),
-            new TokenType("kw_int", @"int"),
-            new TokenType("kw_vector", @"vector"),
-            new TokenType("kw_str", @"str"),
-            new TokenType("kw_var", @"var"),
-            new TokenType("kw_def", @"def"),
-            new TokenType("kw_return", @"return"),
-            new TokenType("identifier", @"[A-Za-z_][A-Za-z1-9_]*"),
-            new TokenType("integerLiteral", @"[0-9]+"),
-            new TokenType("stringLiteral_singleQuote", @"'[^'\r\n]*'"),
-            new TokenType("stringLiteral_doubleQuote", @"""[^""\r\n]*"""),
-            new TokenType("semicolon", @";"),
-            new TokenType("leftParenthesis", @"\("),
-            new TokenType("rightParenthesis", @"\)"),
-            new TokenType("leftBrace", @"\{"),
-            new TokenType("rightBrace", @"\}"),
-            new TokenType("leftBracket", @"\["),
-            new TokenType("rightBracket", @"\]"),
-            new TokenType("lessThan", @"<"),
-            new TokenType("greaterThan", @">"),
-            new TokenType("equals", @"="),
-            new TokenType("plus", @"\+"),
-            new TokenType("minus", @"\-"),
-            new TokenType("asterisk", @"\*"),
-            new TokenType("slash", @"\/"),
-            new TokenType("comment", @"#.*$"),
-        };
+            new TokenType("kw_for", @"^for$"),
+            new TokenType("kw_int", @"^int$"),
+            new TokenType("kw_vector", @"^vector$"),
+            new TokenType("kw_str", @"^str$"),
+            new TokenType("kw_var", @"^var$"),
+            new TokenType("kw_def", @"^def$"),
+            new TokenType("kw_return", @"^return$"),
+            new TokenType("kw_to", @"^to$"),
+            new TokenType("identifier", @"^[A-Za-z_][A-Za-z1-9_]*$"),
+            new TokenType("integerLiteral", @"^[0-9]+$"),
+            new TokenType("stringLiteral_singleQuote", @"^'[^'\r\n]*'$"),
+            new TokenType("stringLiteral_doubleQuote", @"^""[^""\r\n]*""$"),
+            new TokenType("semicolon", @"^;$"),
+            new TokenType("leftParenthesis", @"^\($"),
+            new TokenType("rightParenthesis", @"^\)$"),
+            new TokenType("leftBrace", @"^\{$"),
+            new TokenType("rightBrace", @"^\}$"),
+            new TokenType("leftBracket", @"^\[$"),
+            new TokenType("rightBracket", @"^\]$"),
+            new TokenType("lessThan", @"^<$"),
+            new TokenType("greaterThan", @"^>$"),
+            new TokenType("equals", @"^=$"),
+            new TokenType("plus", @"^\+$"),
+            new TokenType("minus", @"^\-$"),
+            new TokenType("asterisk", @"^\*$"),
+            new TokenType("slash", @"^\/$"),
+            new TokenType("comment", @"^#.*$"),
+        });
     }
 }
