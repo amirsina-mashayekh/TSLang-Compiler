@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace Tokenizer
 {
-    internal class TokenType
+    public class TokenType
     {
         public string Name { get; }
 

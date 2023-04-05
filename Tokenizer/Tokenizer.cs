@@ -2,7 +2,7 @@
 
 namespace Tokenizer
 {
-    internal static class Tokenizer
+    public static class Tokenizer
     {
         public static List<Token> Tokenize(StreamReader stream)
         {
