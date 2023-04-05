@@ -1,21 +1,47 @@
-﻿using System.Collections.ObjectModel;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace Tokenizer
 {
+    /// <summary>
+    /// Represents type of tokens in tokenizer.
+    /// Includes a list of token types for TesLang.
+    /// </summary>
     public class TokenType
     {
+        /// <summary>
+        /// Gets the name of the current <see cref="TokenType"/>.
+        /// </summary>
         public string Name { get; }
 
+        /// <summary>
+        /// Gets the regex object to match tokens with the current <see cref="TokenType"/>.
+        /// </summary>
         public Regex Pattern { get; }
 
+        /// <summary>
+        /// Saves hash code of the current <see cref="TokenType"/>. 
+        /// </summary>
         private readonly int _hashCode;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TokenType"/> class
+        /// with the specified name and regex pattern and defaul regex options (compiled and culture invariant).
+        /// </summary>
+        /// <param name="name">The name of this token type.</param>
+        /// <param name="pattern">The regular expression pattern to match tokens of this type.</param>
+        /// <exception cref="ArgumentNullException"></exception>
         public TokenType(string name, string pattern) : this(
             name,
-            new Regex(pattern, RegexOptions.Compiled | RegexOptions.CultureInvariant))
+            new Regex("^" + pattern + "$", RegexOptions.Compiled | RegexOptions.CultureInvariant))
         { }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TokenType"/> class
+        /// with the specified name and regex object.
+        /// </summary>
+        /// <param name="name">The name of this token type.</param>
+        /// <param name="pattern">The <see cref="Regex"/> object to match tokens of this type.</param>
+        /// <exception cref="ArgumentNullException"></exception>
         public TokenType(string name, Regex pattern)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
@@ -37,36 +63,5 @@ namespace Tokenizer
         {
             return Name;
         }
-
-        public static ReadOnlyCollection<TokenType> TokenTypes = new(new List<TokenType>
-        {
-            new TokenType("kw_for", @"^for$"),
-            new TokenType("kw_int", @"^int$"),
-            new TokenType("kw_vector", @"^vector$"),
-            new TokenType("kw_str", @"^str$"),
-            new TokenType("kw_var", @"^var$"),
-            new TokenType("kw_def", @"^def$"),
-            new TokenType("kw_return", @"^return$"),
-            new TokenType("kw_to", @"^to$"),
-            new TokenType("identifier", @"^[A-Za-z_][A-Za-z1-9_]*$"),
-            new TokenType("integerLiteral", @"^[0-9]+$"),
-            new TokenType("stringLiteral_singleQuote", @"^'[^'\r\n]*'$"),
-            new TokenType("stringLiteral_doubleQuote", @"^""[^""\r\n]*""$"),
-            new TokenType("semicolon", @"^;$"),
-            new TokenType("leftParenthesis", @"^\($"),
-            new TokenType("rightParenthesis", @"^\)$"),
-            new TokenType("leftBrace", @"^\{$"),
-            new TokenType("rightBrace", @"^\}$"),
-            new TokenType("leftBracket", @"^\[$"),
-            new TokenType("rightBracket", @"^\]$"),
-            new TokenType("lessThan", @"^<$"),
-            new TokenType("greaterThan", @"^>$"),
-            new TokenType("equals", @"^=$"),
-            new TokenType("plus", @"^\+$"),
-            new TokenType("minus", @"^\-$"),
-            new TokenType("asterisk", @"^\*$"),
-            new TokenType("slash", @"^\/$"),
-            new TokenType("comment", @"^#.*$"),
-        });
     }
 }
