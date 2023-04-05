@@ -28,15 +28,15 @@ namespace Tokenizer
                 while (!stream.EndOfStream)
                 {
                     char ch = (char)stream.Peek();
-                    if (ch == '\n')
+                    if (ch == '\r')
                     {
-                        line++;
-                        column = 1;
                         stream.Read();
                         continue;
                     }
-                    else if (ch == '\r')
+                    else if (ch == '\n')
                     {
+                        line++;
+                        column = 1;
                         stream.Read();
                         continue;
                     }
@@ -106,38 +106,43 @@ namespace Tokenizer
         }
 
         /// <summary>
+        /// A TokenType which represents error.
+        /// </summary>
+        public static readonly TokenType invalidToken = new("invalid", "");
+
+        /// <summary>
         /// A collection of <see cref="TokenType"/>s for TesLang.
         /// </summary>
         public static readonly ReadOnlyCollection<TokenType> TokenTypes = new(new List<TokenType>
         {
-            new TokenType("kw_for", @"for"),
-            new TokenType("kw_int", @"int"),
-            new TokenType("kw_vector", @"vector"),
-            new TokenType("kw_str", @"str"),
-            new TokenType("kw_var", @"var"),
-            new TokenType("kw_def", @"def"),
-            new TokenType("kw_return", @"return"),
-            new TokenType("kw_to", @"to"),
-            new TokenType("identifier", @"[A-Za-z_][A-Za-z1-9_]*"),
-            new TokenType("integerLiteral", @"[0-9]+"),
-            new TokenType("stringLiteral_singleQuote", @"'[^'\r\n]*'"),
-            new TokenType("stringLiteral_doubleQuote", @"""[^""\r\n]*"""),
-            new TokenType("semicolon", @";"),
-            new TokenType("leftParenthesis", @"\("),
-            new TokenType("rightParenthesis", @"\)"),
-            new TokenType("leftBrace", @"\{"),
-            new TokenType("rightBrace", @"\}"),
-            new TokenType("leftBracket", @"\["),
-            new TokenType("rightBracket", @"\]"),
-            new TokenType("lessThan", @"<"),
-            new TokenType("greaterThan", @">"),
-            new TokenType("equals", @"="),
-            new TokenType("plus", @"\+"),
-            new TokenType("minus", @"\-"),
-            new TokenType("asterisk", @"\*"),
-            new TokenType("slash", @"\/"),
-            new TokenType("comment", @"#.*"),
-            new TokenType("invalid", ""),
+            new("kw_for", @"for"),
+            new("kw_int", @"int"),
+            new("kw_vector", @"vector"),
+            new("kw_str", @"str"),
+            new("kw_var", @"var"),
+            new("kw_def", @"def"),
+            new("kw_return", @"return"),
+            new("kw_to", @"to"),
+            new("identifier", @"[A-Za-z_][A-Za-z1-9_]*"),
+            new("integerLiteral", @"[0-9]+"),
+            new("stringLiteral_singleQuote", @"'[^'\r\n]*'"),
+            new("stringLiteral_doubleQuote", @"""[^""\r\n]*"""),
+            new("semicolon", @";"),
+            new("leftParenthesis", @"\("),
+            new("rightParenthesis", @"\)"),
+            new("leftBrace", @"\{"),
+            new("rightBrace", @"\}"),
+            new("leftBracket", @"\["),
+            new("rightBracket", @"\]"),
+            new("lessThan", @"<"),
+            new("greaterThan", @">"),
+            new("equals", @"="),
+            new("plus", @"\+"),
+            new("minus", @"\-"),
+            new("asterisk", @"\*"),
+            new("slash", @"\/"),
+            new("comment", @"#.*"),
+            invalidToken,
         });
     }
 }
