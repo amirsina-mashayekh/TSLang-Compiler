@@ -18,6 +18,13 @@ namespace Tokenizer
         /// </summary>
         public Regex Pattern { get; }
 
+        private static readonly TokenType _invalid = new("invalid", "");
+
+        /// <summary>
+        /// Represents an invalid token type.
+        /// </summary>
+        public static TokenType Invalid => _invalid;
+
         /// <summary>
         /// Saves hash code of the current <see cref="TokenType"/>. 
         /// </summary>
@@ -32,7 +39,7 @@ namespace Tokenizer
         /// <exception cref="ArgumentNullException"></exception>
         public TokenType(string name, string pattern) : this(
             name,
-            new Regex("^" + pattern + "$", RegexOptions.Compiled | RegexOptions.CultureInvariant))
+            new Regex("^" + pattern + @"\z", RegexOptions.Compiled | RegexOptions.CultureInvariant))
         { }
 
         /// <summary>
