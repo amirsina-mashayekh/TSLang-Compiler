@@ -45,6 +45,7 @@ namespace Tokenizer
                         column = 0;
                         if (tmpToken.Length == 0)
                         {
+                            tokenStartLine = line;
                             stream.Read();
                             continue;
                         }
