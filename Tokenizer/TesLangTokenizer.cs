@@ -130,25 +130,24 @@ namespace Tokenizer
                     {
                         tokenType = type;
                     }
-                    else if (matchCount == 2)
-                    {
-                        // If token matches both "identifier" and "kw_*" (keywork) types,
-                        // it should be interpreted as keyword.
-                        if (type.Name.StartsWith("kw_") && tokenType.Name == "identifier")
-                        {
-                            tokenType = type;
-                        }
-                        else if (!(tokenType.Name.StartsWith("kw_") && type.Name == "identifier"))
-                        {
-                            // More than one match. Add next character and try again.
-                            tokenType = TokenType.Invalid;
-                            break;
-                        }
-                    }
                     else
                     {
-                        // More than one match. Add next character and try again.
+                        // More than one match. Invalid token.
                         tokenType = TokenType.Invalid;
+                        break;
+                    }
+                }
+            }
+
+            // Keywords also match identifier pattern.
+            // Check if token is actually identifier or keyword.
+            if (tokenType.Name == "identifier")
+            {
+                foreach (TokenType type in Keywords)
+                {
+                    if (type.Pattern.IsMatch(tokenStr))
+                    {
+                        tokenType = type;
                         break;
                     }
                 }
@@ -162,18 +161,6 @@ namespace Tokenizer
         /// </summary>
         public static readonly ReadOnlyCollection<TokenType> TokenTypes = new(new List<TokenType>
         {
-            new("kw_for", @"for"),
-            new("kw_while", @"while"),
-            new("kw_if", @"if"),
-            new("kw_else", @"else"),
-            new("kw_var", @"var"),
-            new("kw_def", @"def"),
-            new("kw_int", @"int"),
-            new("kw_vector", @"vector"),
-            new("kw_str", @"str"),
-            new("kw_null", @"null"),
-            new("kw_return", @"return"),
-            new("kw_to", @"to"),
             new("identifier", @"[A-Za-z_][A-Za-z1-9_]*"),
             new("literal_integer", @"[0-9]+"),
             new("literal_string_singleQuote", @"'[^'\r\n]*'"),
@@ -204,6 +191,22 @@ namespace Tokenizer
             new("colon", @":"),
             new("comma", @","),
             new("comment", @"#.*"),
+        });
+
+        public static readonly ReadOnlyCollection<TokenType> Keywords = new(new List<TokenType>()
+        {
+            new("kw_for", @"for"),
+            new("kw_while", @"while"),
+            new("kw_if", @"if"),
+            new("kw_else", @"else"),
+            new("kw_var", @"var"),
+            new("kw_def", @"def"),
+            new("kw_int", @"int"),
+            new("kw_vector", @"vector"),
+            new("kw_str", @"str"),
+            new("kw_null", @"null"),
+            new("kw_return", @"return"),
+            new("kw_to", @"to"),
         });
     }
 }
