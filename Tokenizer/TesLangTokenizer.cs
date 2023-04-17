@@ -51,7 +51,7 @@ namespace Tokenizer
                         }
                         endOfToken = true;
                     }
-                    else if (ch == ' ')
+                    else if (ch == ' ' || ch == '\t')
                     {
                         if (tmpToken.Length == 0)
                         {
