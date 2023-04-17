@@ -4,107 +4,132 @@ using System.Text;
 namespace Tokenizer
 {
     /// <summary>
-    /// Includes methods and fields to tokenize a TesLang source code.
+    /// Represents a TesLang source code tokenizer.
     /// </summary>
-    public static class TesLangTokenizer
+    public class TesLangTokenizer
     {
         /// <summary>
-        /// Tokenizes provided source code.
+        /// Current line of source code which <see cref="stream"/> is pointing to.
         /// </summary>
-        /// <param name="stream">Stream of source code.</param>
-        /// <returns>A list of detected tokens in the source code.</returns>
-        public static List<Token> Tokenize(StreamReader stream)
+        private int line;
+
+        /// <summary>
+        /// Current column of source code which <see cref="stream"/> is pointing to.
+        /// </summary>
+        private int column;
+
+        /// <summary>
+        /// A <see cref="StreamReader"/> which provides source code content.
+        /// </summary>
+        private readonly StreamReader stream;
+
+        /// <summary>
+        /// Gets weather the tokenizer reached end of source code.
+        /// </summary>
+        public bool EndOfStream { get; private set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TesLangTokenizer"/> class
+        /// for the provided source code stream.
+        /// </summary>
+        /// <param name="stream">A <see cref="StreamReader"/> providing source code.</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public TesLangTokenizer(StreamReader stream)
         {
-            List<Token> tokens = new();
+            this.stream = stream ?? throw new ArgumentNullException(nameof(stream));
+            EndOfStream = false;
+            line = 1;
+            column = 1;
+        }
+
+        /// <summary>
+        /// Returns first available token in
+        /// the provided source code stream.
+        /// Closes source code <see cref="StreamReader"/> when it
+        /// reaches to the end of it.
+        /// </summary>
+        /// <returns>Next token in the source code.</returns>
+        public Token NextToken()
+        {
+            int tokenStartLine = line;
+            int tokenStartCol = column;
 
             StringBuilder tmpToken = new();
-            int tokenStartLine = 1;
-            int tokenStartCol = 1;
 
             TokenType prevType = TokenType.Invalid;
-            int line = 1;
-            int column = 0;
-            bool rollback = false;
             bool endOfToken = false;
 
-            using (stream)
+            while (!stream.EndOfStream)
             {
-                while (!stream.EndOfStream)
+                char ch = (char)stream.Peek();
+
+                if (ch == '\r')
                 {
-                    char ch = (char)stream.Peek();
-                    column++;
+                    stream.Read();
+                    continue;
+                }
+                else if (ch == '\n')
+                {
+                    stream.Read();
+                    line++;
+                    column = 1;
 
-                    if (ch == '\r')
+                    if (tmpToken.Length > 0)
                     {
-                        stream.Read();
-                        continue;
-                    }
-                    else if (ch == '\n')
-                    {
-                        line++;
-                        column = 0;
-                        if (tmpToken.Length == 0)
-                        {
-                            tokenStartLine = line;
-                            stream.Read();
-                            continue;
-                        }
                         endOfToken = true;
-                    }
-                    else if (ch == ' ' || ch == '\t')
-                    {
-                        if (tmpToken.Length == 0)
-                        {
-                            tokenStartCol = column;
-                            stream.Read();
-                            continue;
-                        }
-                        else if (tmpToken[0] != '"' && tmpToken[0] != '\'' && tmpToken[0] != '#')
-                        {
-                            endOfToken = true;
-                        }
-                    }
-
-                    tmpToken.Append(ch);
-
-                    TokenType currentType = TypeOfToken(tmpToken.ToString());
-
-                    endOfToken |=
-                        (prevType != TokenType.Invalid) &&
-                        (currentType == TokenType.Invalid);
-
-                    if (endOfToken)
-                    {
-                        // Last match was the correct type for token.
-                        tmpToken.Length--;
-                        tokens.Add(new Token(prevType, tmpToken.ToString(), tokenStartLine, tokenStartCol));
-                        tmpToken.Clear();
-
-                        tokenStartLine = line;
-                        tokenStartCol = (ch == ' ' || ch == '\n') ? column + 1 : column;
-                        endOfToken = false;
-
-                        rollback = ch != '\n' && ch != ' ';
-                    }
-
-                    if (!rollback)
-                    {
-                        stream.Read();
-                        prevType = currentType;
                     }
                     else
                     {
-                        column--;
-                        rollback = false;
+                        tokenStartLine = line;
+                        tokenStartCol = column;
+                        continue;
                     }
                 }
+                else if (ch == ' ' || ch == '\t')
+                {
+                    if (tmpToken.Length == 0)
+                    {
+                        column++;
+                        tokenStartCol = column;
+                        stream.Read();
+                        continue;
+                    }
+                    else if (tmpToken[0] != '"' && tmpToken[0] != '\'' && tmpToken[0] != '#')
+                    {
+                        endOfToken = true;
+                    }
+                }
+
+                tmpToken.Append(ch);
+
+                TokenType currentType = TypeOfToken(tmpToken.ToString());
+
+                endOfToken |=
+                    stream.EndOfStream |
+                    ((prevType != TokenType.Invalid) &&
+                    (currentType == TokenType.Invalid));
+
+                if (endOfToken)
+                {
+                    tmpToken.Length--;
+                    break;
+                }
+
+                stream.Read();
+                column++;
+                prevType = currentType;
             }
 
-            // Add last token
-            string lastTokenStr = tmpToken.ToString();
-            tokens.Add(new Token(TypeOfToken(lastTokenStr), lastTokenStr, tokenStartLine, tokenStartCol));
+            string tokenStr = tmpToken.ToString();
 
-            return tokens;
+            if (stream.EndOfStream)
+            {
+                stream.Close();
+                EndOfStream = true;
+                prevType = TypeOfToken(tokenStr);
+            }
+
+            return new Token(prevType, tokenStr, tokenStartLine, tokenStartCol);
         }
 
         /// <summary>
@@ -157,7 +182,7 @@ namespace Tokenizer
         }
 
         /// <summary>
-        /// A collection of <see cref="TokenType"/>s for TesLang.
+        /// A collection of non-keyword <see cref="TokenType"/>s for TesLang.
         /// </summary>
         public static readonly ReadOnlyCollection<TokenType> TokenTypes = new(new List<TokenType>
         {
@@ -193,6 +218,9 @@ namespace Tokenizer
             new("comment", @"#.*"),
         });
 
+        /// <summary>
+        /// A collection of keyword <see cref="TokenType"/>s for TesLang.
+        /// </summary>
         public static readonly ReadOnlyCollection<TokenType> Keywords = new(new List<TokenType>()
         {
             new("kw_for", @"for"),

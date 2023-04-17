@@ -39,7 +39,7 @@ namespace Tokenizer
         /// <exception cref="ArgumentNullException"></exception>
         public TokenType(string name, string pattern) : this(
             name,
-            new Regex("^" + pattern + @"\z", RegexOptions.Compiled | RegexOptions.CultureInvariant))
+            new Regex("^" + pattern + @"\z", RegexOptions.CultureInvariant))
         { }
 
         /// <summary>
