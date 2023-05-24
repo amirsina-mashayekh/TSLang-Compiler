@@ -4,9 +4,9 @@ using System.Text;
 namespace Tokenizer
 {
     /// <summary>
-    /// Represents a TesLang source code tokenizer.
+    /// Represents a TSLang source code tokenizer.
     /// </summary>
-    public class TesLangTokenizer
+    public class TSLangTokenizer
     {
         /// <summary>
         /// Current line of source code which <see cref="stream"/> is pointing to.
@@ -29,12 +29,12 @@ namespace Tokenizer
         public bool EndOfStream { get; private set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TesLangTokenizer"/> class
+        /// Initializes a new instance of the <see cref="TSLangTokenizer"/> class
         /// for the provided source code stream.
         /// </summary>
         /// <param name="stream">A <see cref="StreamReader"/> providing source code.</param>
         /// <exception cref="ArgumentNullException"></exception>
-        public TesLangTokenizer(StreamReader stream)
+        public TSLangTokenizer(StreamReader stream)
         {
             this.stream = stream ?? throw new ArgumentNullException(nameof(stream));
             EndOfStream = false;
@@ -182,7 +182,7 @@ namespace Tokenizer
         }
 
         /// <summary>
-        /// A collection of non-keyword <see cref="TokenType"/>s for TesLang.
+        /// A collection of non-keyword <see cref="TokenType"/>s for TSLang.
         /// </summary>
         public static readonly ReadOnlyCollection<TokenType> TokenTypes = new(new List<TokenType>
         {
@@ -219,7 +219,7 @@ namespace Tokenizer
         });
 
         /// <summary>
-        /// A collection of keyword <see cref="TokenType"/>s for TesLang.
+        /// A collection of keyword <see cref="TokenType"/>s for TSLang.
         /// </summary>
         public static readonly ReadOnlyCollection<TokenType> Keywords = new(new List<TokenType>()
         {

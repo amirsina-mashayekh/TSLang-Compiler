@@ -4,7 +4,7 @@ namespace Tokenizer
 {
     /// <summary>
     /// Represents type of tokens in tokenizer.
-    /// Includes a list of token types for TesLang.
+    /// Includes a list of token types for TSLang.
     /// </summary>
     public class TokenType
     {
