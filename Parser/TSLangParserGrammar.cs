@@ -33,7 +33,7 @@ namespace Parser
                 Error("Expected 'def'");
             DropToken();
 
-            Type(true);
+            Type();
             
             if (CurrentToken.Type != TSLangTokenTypes.identifier)
                 Error("Expected identifier");
@@ -147,12 +147,33 @@ namespace Parser
 
             if (CurrentToken.Type == TSLangTokenTypes.leftBracket
                 || CurrentToken.Type == TSLangTokenTypes.leftParenthesis)
+            {
                 return;
+            }
+
+            Expr();
+
+            if (CurrentToken.Type == TSLangTokenTypes.comma)
+            {
+                DropToken();
+
+                CList();
+            }
         }
 
-        private void Type(bool acceptNull = false)
+        private void Type()
         {
-            throw new NotImplementedException();
+            if (CurrentToken.Type == TSLangTokenTypes.kw_int
+                || CurrentToken.Type == TSLangTokenTypes.kw_vector
+                || CurrentToken.Type == TSLangTokenTypes.kw_str
+                || CurrentToken.Type == TSLangTokenTypes.kw_null)
+            {
+                DropToken();
+            }
+            else
+            {
+                Error("Expected type");
+            }
         }
 
         private void Expr()
