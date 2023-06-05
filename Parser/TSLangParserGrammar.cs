@@ -12,7 +12,7 @@ namespace Parser
     {
         private void Prog()
         {
-            //
+            // <empty>
             // Func Prog
             if (tokenizer.EndOfStream)
                 return;
@@ -76,7 +76,14 @@ namespace Parser
 
         private void Body()
         {
-            throw new NotImplementedException();
+            // <empty>
+            // Stmt Body
+            if (GetToken().Type == TSLangTokenTypes.rightBrace)
+                return;
+
+            Stmt();
+
+            Body();
         }
 
         private void Stmt()
