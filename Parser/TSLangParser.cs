@@ -22,7 +22,8 @@ namespace Parser
         public TSLangParser(StreamReader stream)
         {
             tokenizer = new TSLangTokenizer(stream);
-            lastToken = tokenizer.NextToken();
+            lastToken = new Token(TSLangTokenTypes.comment, "", 0, 0);
+            DropToken();
         }
 
         /// <summary>
@@ -30,14 +31,17 @@ namespace Parser
         /// </summary>
         public void Parse()
         {
-            throw new NotImplementedException();
+            Prog();
         }
 
         private Token CurrentToken => lastToken;
 
         private void DropToken()
         {
-            lastToken = tokenizer.NextToken();
+            do
+            {
+                lastToken = tokenizer.NextToken();
+            } while (lastToken.Type == TSLangTokenTypes.comment);
         }
 
         private void Error(string message)
