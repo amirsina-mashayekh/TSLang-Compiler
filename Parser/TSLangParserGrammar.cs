@@ -14,9 +14,10 @@ namespace Parser
         {
             // <empty>
             // Func Prog
+
             if (tokenizer.EndOfStream)
                 return;
-            else if (GetToken().Type != TSLangTokenTypes.kw_def)
+            else if (CurrentToken.Type != TSLangTokenTypes.kw_def)
                 Error("Expected 'def'");
 
             Func();
@@ -28,43 +29,43 @@ namespace Parser
             // def Type iden ( Flist ) { Body }
             // def Type iden ( Flist ) return Expr;
 
-            if (GetToken().Type != TSLangTokenTypes.kw_def)
+            if (CurrentToken.Type != TSLangTokenTypes.kw_def)
                 Error("Expected 'def'");
             DropToken();
 
             Type();
             
-            if (GetToken().Type != TSLangTokenTypes.identifier)
+            if (CurrentToken.Type != TSLangTokenTypes.identifier)
                 Error("Expected identifier");
             DropToken();
 
-            if (GetToken().Type != TSLangTokenTypes.leftParenthesis)
+            if (CurrentToken.Type != TSLangTokenTypes.leftParenthesis)
                 Error("Expected '('");
             DropToken();
 
             FList();
 
-            if (GetToken().Type != TSLangTokenTypes.rightParenthesis)
+            if (CurrentToken.Type != TSLangTokenTypes.rightParenthesis)
                 Error("Expected ')'");
             DropToken();
 
-            if (GetToken().Type == TSLangTokenTypes.leftBrace)
+            if (CurrentToken.Type == TSLangTokenTypes.leftBrace)
             {
                 DropToken();
 
                 Body();
 
-                if (GetToken().Type != TSLangTokenTypes.rightBrace)
+                if (CurrentToken.Type != TSLangTokenTypes.rightBrace)
                     Error("Expected '}'");
                 DropToken();
             }
-            else if (GetToken().Type == TSLangTokenTypes.kw_return)
+            else if (CurrentToken.Type == TSLangTokenTypes.kw_return)
             {
                 DropToken();
 
                 Expr();
 
-                if (GetToken().Type != TSLangTokenTypes.semicolon)
+                if (CurrentToken.Type != TSLangTokenTypes.semicolon)
                     Error("Expected ';'");
                 DropToken();
             }
@@ -78,7 +79,8 @@ namespace Parser
         {
             // <empty>
             // Stmt Body
-            if (GetToken().Type == TSLangTokenTypes.rightBrace)
+
+            if (CurrentToken.Type == TSLangTokenTypes.rightBrace)
                 return;
 
             Stmt();
@@ -93,7 +95,25 @@ namespace Parser
 
         private void DefVar()
         {
-            throw new NotImplementedException();
+            // var Type iden
+            // var Type iden = Expr
+
+            if (CurrentToken.Type != TSLangTokenTypes.kw_var)
+                Error("Expected 'var'");
+            DropToken();
+
+            Type();
+
+            if (CurrentToken.Type != TSLangTokenTypes.identifier)
+                Error("Expected identifier");
+            DropToken();
+
+            if (CurrentToken.Type == TSLangTokenTypes.equals)
+            {
+                DropToken();
+
+                Expr();
+            }
         }
 
         private void FList()

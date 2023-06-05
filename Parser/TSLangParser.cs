@@ -33,7 +33,7 @@ namespace Parser
             throw new NotImplementedException();
         }
 
-        private Token GetToken() => lastToken;
+        private Token CurrentToken => lastToken;
 
         private void DropToken()
         {
@@ -43,8 +43,8 @@ namespace Parser
         private void Error(string message)
         {
             throw new Exception(
-                "Ln: " + GetToken().Line.ToString() + ", " +
-                "Ch: " + GetToken().Column.ToString() + ", " +
+                "Ln: " + CurrentToken.Line.ToString() + ", " +
+                "Ch: " + CurrentToken.Column.ToString() + ", " +
                message);
         }
     }
