@@ -38,6 +38,10 @@ namespace Parser
 
         private void DropToken()
         {
+            if (tokenizer.EndOfStream)
+            {
+                return;
+            }
             do
             {
                 lastToken = tokenizer.NextToken();

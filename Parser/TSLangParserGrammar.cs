@@ -204,10 +204,18 @@ namespace Parser
             else if (CurrentToken.Type == TSLangTokenTypes.kw_var)
             {
                 DefVar();
+
+                if (CurrentToken.Type != TSLangTokenTypes.semicolon)
+                    Error("Expected ';'");
+                DropToken();
             }
             else
             {
                 Expr();
+
+                if (CurrentToken.Type != TSLangTokenTypes.semicolon)
+                    Error("Expected ';'");
+                DropToken();
             }
         }
 
@@ -317,25 +325,117 @@ namespace Parser
              * number
              * string
              * [ Clist ]
+             * ( Expr )
              * ! Expr
              * + Expr
              * - Expr
-             * Expr ? Expr : Expr
-             * Expr + Expr
-             * Expr - Expr
              * Expr * Expr
              * Expr / Expr
              * Expr % Expr
+             * Expr + Expr
+             * Expr - Expr
              * Expr > Expr
              * Expr < Expr
-             * Expr == Expr
              * Expr >= Expr
              * Expr <= Expr
+             * Expr == Expr
              * Expr != Expr
-             * Expr || Expr
              * Expr && Expr
+             * Expr || Expr
+             * Expr ? Expr : Expr
              */
 
+            LOrExpr();
+
+            while (CurrentToken.Type == TSLangTokenTypes.questionMark)
+            {
+                DropToken();
+
+                LOrExpr();
+
+                if (CurrentToken.Type != TSLangTokenTypes.colon)
+                    Error("Expected ':'");
+                DropToken();
+
+                LOrExpr();
+            }
+        }
+
+        private void LOrExpr()
+        {
+            LAndExpr();
+            while (CurrentToken.Type == TSLangTokenTypes.logicalOr)
+            {
+                DropToken();
+
+                LAndExpr();
+            }
+        }
+
+        private void LAndExpr()
+        {
+            EqNeqExpr();
+            while (CurrentToken.Type == TSLangTokenTypes.logicalAnd)
+            {
+                DropToken();
+
+                EqNeqExpr();
+            }
+        }
+
+        private void EqNeqExpr()
+        {
+            CompareExpr();
+            while (CurrentToken.Type == TSLangTokenTypes.doubleEquals
+                || CurrentToken.Type == TSLangTokenTypes.notEquals)
+            {
+                DropToken();
+
+                CompareExpr();
+            }
+        }
+
+        private void CompareExpr()
+        {
+            AddSubExpr();
+            while (CurrentToken.Type == TSLangTokenTypes.lessThan
+                || CurrentToken.Type == TSLangTokenTypes.greaterThan
+                || CurrentToken.Type == TSLangTokenTypes.lessThanOrEqual
+                || CurrentToken.Type == TSLangTokenTypes.greaterThan)
+            {
+                DropToken();
+
+                AddSubExpr();
+            }
+        }
+
+        private void AddSubExpr()
+        {
+            MulDivModExpr();
+            while (CurrentToken.Type == TSLangTokenTypes.plus
+                || CurrentToken.Type == TSLangTokenTypes.minus)
+            {
+                DropToken();
+
+                MulDivModExpr();
+            }
+        }
+
+        private void MulDivModExpr()
+        {
+            FinalExpr();
+            while (CurrentToken.Type == TSLangTokenTypes.asterisk
+                || CurrentToken.Type == TSLangTokenTypes.slash
+                || CurrentToken.Type == TSLangTokenTypes.percent)
+            {
+                DropToken();
+
+                FinalExpr();
+            }
+        }
+
+        private void FinalExpr()
+        {
             if (CurrentToken.Type == TSLangTokenTypes.identifier)
             {
                 DropToken();
@@ -361,6 +461,10 @@ namespace Parser
                     DropToken();
 
                     CList();
+
+                    if (CurrentToken.Type != TSLangTokenTypes.rightParenthesis)
+                        Error("Expected ')'");
+                    DropToken();
                 }
             }
             else if (CurrentToken.Type == TSLangTokenTypes.literal_integer
@@ -387,9 +491,19 @@ namespace Parser
 
                 Expr();
             }
+            else if (CurrentToken.Type == TSLangTokenTypes.leftParenthesis)
+            {
+                DropToken();
+
+                Expr();
+
+                if (CurrentToken.Type != TSLangTokenTypes.rightParenthesis)
+                    Error("Expected ')'");
+                DropToken();
+            }
             else
             {
-                throw new NotImplementedException();
+                Error("Expected expression");
             }
         }
     }
