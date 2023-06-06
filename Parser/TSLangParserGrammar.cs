@@ -24,7 +24,7 @@ namespace Parser
                 return;
             
             if (CurrentToken.Type != TSLangTokenTypes.kw_def)
-                Error("Expected 'def'");
+                SyntaxError("Expected 'def'");
 
             Func();
             Prog();
@@ -40,23 +40,23 @@ namespace Parser
         private void Func()
         {
             if (CurrentToken.Type != TSLangTokenTypes.kw_def)
-                Error("Expected 'def'");
+                SyntaxError("Expected 'def'");
             DropToken();
 
             Type();
             
             if (CurrentToken.Type != TSLangTokenTypes.identifier)
-                Error("Expected identifier");
+                SyntaxError("Expected identifier");
             DropToken();
 
             if (CurrentToken.Type != TSLangTokenTypes.leftParenthesis)
-                Error("Expected '('");
+                SyntaxError("Expected '('");
             DropToken();
 
             FList();
 
             if (CurrentToken.Type != TSLangTokenTypes.rightParenthesis)
-                Error("Expected ')'");
+                SyntaxError("Expected ')'");
             DropToken();
 
             if (CurrentToken.Type == TSLangTokenTypes.leftBrace)
@@ -66,7 +66,7 @@ namespace Parser
                 Body();
 
                 if (CurrentToken.Type != TSLangTokenTypes.rightBrace)
-                    Error("Expected '}'");
+                    SyntaxError("Expected '}'");
                 DropToken();
             }
             else if (CurrentToken.Type == TSLangTokenTypes.kw_return)
@@ -76,12 +76,12 @@ namespace Parser
                 Expr();
 
                 if (CurrentToken.Type != TSLangTokenTypes.semicolon)
-                    Error("Expected ';'");
+                    SyntaxError("Expected ';'");
                 DropToken();
             }
             else
             {
-                Error("Expected '{' or 'return'");
+                SyntaxError("Expected '{' or 'return'");
             }
         }
 
@@ -125,13 +125,13 @@ namespace Parser
                 DropToken();
 
                 if (CurrentToken.Type != TSLangTokenTypes.leftParenthesis)
-                    Error("Expected '('");
+                    SyntaxError("Expected '('");
                 DropToken();
 
                 Expr();
 
                 if (CurrentToken.Type != TSLangTokenTypes.rightParenthesis)
-                    Error("Expected ')'");
+                    SyntaxError("Expected ')'");
                 DropToken();
 
                 Stmt();
@@ -150,13 +150,13 @@ namespace Parser
                 DropToken();
 
                 if (CurrentToken.Type != TSLangTokenTypes.leftParenthesis)
-                    Error("Expected '('");
+                    SyntaxError("Expected '('");
                 DropToken();
 
                 Expr();
 
                 if (CurrentToken.Type != TSLangTokenTypes.rightParenthesis)
-                    Error("Expected ')'");
+                    SyntaxError("Expected ')'");
                 DropToken();
 
                 Stmt();
@@ -167,27 +167,27 @@ namespace Parser
                 DropToken();
 
                 if (CurrentToken.Type != TSLangTokenTypes.leftParenthesis)
-                    Error("Expected '('");
+                    SyntaxError("Expected '('");
                 DropToken();
 
                 if (CurrentToken.Type != TSLangTokenTypes.identifier)
-                    Error("Expected identifier");
+                    SyntaxError("Expected identifier");
                 DropToken();
 
                 if (CurrentToken.Type != TSLangTokenTypes.equals)
-                    Error("Expected '='");
+                    SyntaxError("Expected '='");
                 DropToken();
 
                 Expr();
 
                 if (CurrentToken.Type != TSLangTokenTypes.kw_to)
-                    Error("Expected 'to'");
+                    SyntaxError("Expected 'to'");
                 DropToken();
 
                 Expr();
 
                 if (CurrentToken.Type != TSLangTokenTypes.rightParenthesis)
-                    Error("Expected ')'");
+                    SyntaxError("Expected ')'");
                 DropToken();
 
                 Stmt();
@@ -200,7 +200,7 @@ namespace Parser
                 Expr();
 
                 if (CurrentToken.Type != TSLangTokenTypes.semicolon)
-                    Error("Expected ';'");
+                    SyntaxError("Expected ';'");
                 DropToken();
             }
             else if (CurrentToken.Type == TSLangTokenTypes.leftBrace)
@@ -211,7 +211,7 @@ namespace Parser
                 Body();
 
                 if (CurrentToken.Type != TSLangTokenTypes.rightBrace)
-                    Error("Expected '}'");
+                    SyntaxError("Expected '}'");
                 DropToken();
             }
             else if (CurrentToken.Type == TSLangTokenTypes.kw_def)
@@ -225,7 +225,7 @@ namespace Parser
                 DefVar();
 
                 if (CurrentToken.Type != TSLangTokenTypes.semicolon)
-                    Error("Expected ';'");
+                    SyntaxError("Expected ';'");
                 DropToken();
             }
             else
@@ -234,7 +234,7 @@ namespace Parser
                 Expr();
 
                 if (CurrentToken.Type != TSLangTokenTypes.semicolon)
-                    Error("Expected ';'");
+                    SyntaxError("Expected ';'");
                 DropToken();
             }
         }
@@ -249,13 +249,13 @@ namespace Parser
         private void DefVar()
         {
             if (CurrentToken.Type != TSLangTokenTypes.kw_var)
-                Error("Expected 'var'");
+                SyntaxError("Expected 'var'");
             DropToken();
 
             Type();
 
             if (CurrentToken.Type != TSLangTokenTypes.identifier)
-                Error("Expected identifier");
+                SyntaxError("Expected identifier");
             DropToken();
 
             if (CurrentToken.Type == TSLangTokenTypes.equals)
@@ -284,7 +284,7 @@ namespace Parser
             Type();
 
             if (CurrentToken.Type != TSLangTokenTypes.identifier)
-                Error("Expected identifier");
+                SyntaxError("Expected identifier");
             DropToken();
 
             if (CurrentToken.Type == TSLangTokenTypes.comma)
@@ -344,7 +344,7 @@ namespace Parser
             }
             else
             {
-                Error("Expected type");
+                SyntaxError("Expected type");
             }
         }
 
@@ -367,7 +367,7 @@ namespace Parser
                 Expr();
 
                 if (CurrentToken.Type != TSLangTokenTypes.colon)
-                    Error("Expected ':'");
+                    SyntaxError("Expected ':'");
                 DropToken();
 
                 Expr();
@@ -547,7 +547,7 @@ namespace Parser
                     Expr();
 
                     if (CurrentToken.Type != TSLangTokenTypes.rightBracket)
-                        Error("Expected ']'");
+                        SyntaxError("Expected ']'");
                     DropToken();
 
                     if (CurrentToken.Type == TSLangTokenTypes.equals)
@@ -573,7 +573,7 @@ namespace Parser
                     CList();
 
                     if (CurrentToken.Type != TSLangTokenTypes.rightParenthesis)
-                        Error("Expected ')'");
+                        SyntaxError("Expected ')'");
                     DropToken();
                 }
             }
@@ -593,7 +593,7 @@ namespace Parser
                 CList();
 
                 if (CurrentToken.Type != TSLangTokenTypes.rightBracket)
-                    Error("Expected ']'");
+                    SyntaxError("Expected ']'");
                 DropToken();
             }
             else if (CurrentToken.Type == TSLangTokenTypes.exclamationMark
@@ -615,12 +615,12 @@ namespace Parser
                 Expr();
 
                 if (CurrentToken.Type != TSLangTokenTypes.rightParenthesis)
-                    Error("Expected ')'");
+                    SyntaxError("Expected ')'");
                 DropToken();
             }
             else
             {
-                Error("Expected valid expression");
+                SyntaxError("Expected valid expression");
             }
         }
     }
