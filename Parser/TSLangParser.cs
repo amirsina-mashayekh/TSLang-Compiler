@@ -14,6 +14,10 @@ namespace Parser
 
         private Token lastToken;
 
+        public bool HasError { get; private set; }
+
+        public bool Done { get; private set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="TSLangParser"/> class
         /// for the provided source code stream.
@@ -23,6 +27,8 @@ namespace Parser
         {
             tokenizer = new TSLangTokenizer(stream);
             lastToken = new Token(TSLangTokenTypes.comment, "", 0, 0);
+            HasError = false;
+            Done = false;
             DropToken();
         }
 
@@ -40,6 +46,7 @@ namespace Parser
         {
             if (tokenizer.EndOfStream)
             {
+                Done = true;
                 return;
             }
             do
@@ -50,7 +57,9 @@ namespace Parser
 
         private void Error(string message)
         {
-            throw new Exception(
+            HasError = true;
+
+            Console.Error.WriteLine(
                 "Ln: " + CurrentToken.Line.ToString() + ", " +
                 "Ch: " + CurrentToken.Column.ToString() + ", " +
                message);
