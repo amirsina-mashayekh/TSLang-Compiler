@@ -320,6 +320,7 @@ namespace Parser
             /*
              * iden
              * iden [ Expr ]
+             * iden [ Expr ] = Expr
              * iden = Expr
              * iden ( Clist )
              * number
@@ -449,6 +450,13 @@ namespace Parser
                     if (CurrentToken.Type != TSLangTokenTypes.rightBracket)
                         Error("Expected ']'");
                     DropToken();
+
+                    if (CurrentToken.Type == TSLangTokenTypes.equals)
+                    {
+                        DropToken();
+
+                        Expr();
+                    }
                 }
                 else if (CurrentToken.Type == TSLangTokenTypes.equals)
                 {
