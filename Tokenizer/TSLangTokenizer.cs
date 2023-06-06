@@ -56,7 +56,7 @@ namespace Tokenizer
 
             StringBuilder tmpToken = new();
 
-            TokenType prevType = TokenType.Invalid;
+            TokenType prevType = TSLangTokenTypes.invalid;
             bool endOfToken = false;
 
             while (!stream.EndOfStream)
@@ -106,8 +106,8 @@ namespace Tokenizer
 
                 endOfToken |=
                     stream.EndOfStream |
-                    ((prevType != TokenType.Invalid) &&
-                    (currentType == TokenType.Invalid));
+                    ((prevType != TSLangTokenTypes.invalid) &&
+                    (currentType == TSLangTokenTypes.invalid));
 
                 if (endOfToken)
                 {
@@ -138,12 +138,12 @@ namespace Tokenizer
         /// <param name="tokenStr">String Representation of the token.</param>
         /// <returns>
         /// Type of token if <paramref name="tokenStr"/> matches a specific type.
-        /// <see cref="TokenType.Invalid"/> if <paramref name="tokenStr"/> does not
+        /// <see cref="TSLangTokenTypes.invalid"/> if <paramref name="tokenStr"/> does not
         /// match any type of token or matches more than one type (except keyword and identifier).
         /// </returns>
         private static TokenType TypeOfToken(string tokenStr)
         {
-            TokenType tokenType = TokenType.Invalid;
+            TokenType tokenType = TSLangTokenTypes.invalid;
             int matchCount = 0;
 
             foreach (TokenType type in TokenTypes)
@@ -158,7 +158,7 @@ namespace Tokenizer
                     else
                     {
                         // More than one match. Invalid token.
-                        tokenType = TokenType.Invalid;
+                        tokenType = TSLangTokenTypes.invalid;
                         break;
                     }
                 }

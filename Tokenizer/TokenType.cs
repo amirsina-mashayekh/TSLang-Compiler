@@ -18,13 +18,6 @@ namespace Tokenizer
         /// </summary>
         public Regex Pattern { get; }
 
-        private static readonly TokenType _invalid = new("invalid", "");
-
-        /// <summary>
-        /// Represents an invalid token type.
-        /// </summary>
-        public static TokenType Invalid => _invalid;
-
         /// <summary>
         /// Saves hash code of the current <see cref="TokenType"/>. 
         /// </summary>

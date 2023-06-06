@@ -8,6 +8,9 @@ namespace Tokenizer
 {
     public static class TSLangTokenTypes
     {
+        public static readonly TokenType invalid
+            = new("invalid", "");
+
         public static readonly TokenType identifier
             = new ("identifier", @"[A-Za-z_][A-Za-z1-9_]*");
 
