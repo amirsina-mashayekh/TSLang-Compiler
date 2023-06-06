@@ -351,13 +351,13 @@ namespace Parser
             {
                 DropToken();
 
-                LOrExpr();
+                Expr();
 
                 if (CurrentToken.Type != TSLangTokenTypes.colon)
                     Error("Expected ':'");
                 DropToken();
 
-                LOrExpr();
+                Expr();
             }
         }
 
