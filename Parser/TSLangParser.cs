@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Tokenizer;
+﻿using Tokenizer;
 
 namespace Parser
 {
+    /// <summary>
+    /// Represents a TSLang source code parser.
+    /// </summary>
     public partial class TSLangParser
     {
         /// <summary>
@@ -84,6 +81,7 @@ namespace Parser
             if (tokenizer.EndOfStream)
             {
                 Done = true;
+                lastToken = new Token(TSLangTokenTypes.invalid, "", lastToken.Column, lastToken.Line);
                 return;
             }
 
