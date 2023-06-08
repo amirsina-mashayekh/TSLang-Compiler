@@ -22,9 +22,6 @@ namespace Parser
             if (Done)
                 // *EMPTY*
                 return;
-            
-            if (CurrentToken.Type != TSLangTokenTypes.kw_def)
-                SyntaxError("Expected 'def'");
 
             Func();
             Prog();
@@ -454,7 +451,7 @@ namespace Parser
             while (CurrentToken.Type == TSLangTokenTypes.lessThan
                 || CurrentToken.Type == TSLangTokenTypes.greaterThan
                 || CurrentToken.Type == TSLangTokenTypes.lessThanOrEqual
-                || CurrentToken.Type == TSLangTokenTypes.greaterThan)
+                || CurrentToken.Type == TSLangTokenTypes.greaterThanOrEqual)
             {
                 // Expr > Expr
                 // Expr < Expr

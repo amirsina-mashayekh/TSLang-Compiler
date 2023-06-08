@@ -76,10 +76,15 @@ namespace Parser
                 Done = true;
                 return;
             }
+
             do
             {
                 lastToken = tokenizer.NextToken();
-            } while (lastToken.Type == TSLangTokenTypes.comment);
+                if (lastToken.Type == TSLangTokenTypes.invalid)
+                {
+                    SyntaxError("Invalid token: " + lastToken.Value);
+                }
+            } while (lastToken.Type == TSLangTokenTypes.comment || lastToken.Type == TSLangTokenTypes.invalid);
         }
 
         /// <summary>
