@@ -43,7 +43,6 @@ namespace Parser
                 TokenType[] recoveryPoint =
                 {
                     TSLangTokenTypes.kw_def,
-                    TSLangTokenTypes.identifier,
                     TSLangTokenTypes.leftParenthesis,
                     TSLangTokenTypes.rightParenthesis,
                     TSLangTokenTypes.leftBrace,
@@ -52,21 +51,19 @@ namespace Parser
 
                 do
                 {
-            DropToken();
+                    DropToken();
                     if (Done)
                         return;
                 } while (!recoveryPoint.Contains(CurrentToken.Type));
 
                 if (CurrentToken.Type == TSLangTokenTypes.kw_def)
                     goto rp1;
-                else if (CurrentToken.Type == TSLangTokenTypes.identifier)
-                    goto rp2;
                 else if (CurrentToken.Type == TSLangTokenTypes.leftParenthesis)
-                    goto rp3;
+                    goto rp2;
                 else if (CurrentToken.Type == TSLangTokenTypes.rightParenthesis)
-                    goto rp4;
+                    goto rp3;
                 else
-                    goto rp5;
+                    goto rp4;
             }
         rp1:
             DropToken();
@@ -79,7 +76,6 @@ namespace Parser
 
                 TokenType[] recoveryPoint =
                 {
-                    TSLangTokenTypes.identifier,
                     TSLangTokenTypes.leftParenthesis,
                     TSLangTokenTypes.rightParenthesis,
                     TSLangTokenTypes.leftBrace,
@@ -88,21 +84,18 @@ namespace Parser
 
                 do
                 {
-            DropToken();
+                    DropToken();
                     if (Done)
                         return;
                 } while (!recoveryPoint.Contains(CurrentToken.Type));
-
-                if (CurrentToken.Type == TSLangTokenTypes.identifier)
+                
+                if (CurrentToken.Type == TSLangTokenTypes.leftParenthesis)
                     goto rp2;
-                else if (CurrentToken.Type == TSLangTokenTypes.leftParenthesis)
-                    goto rp3;
                 else if (CurrentToken.Type == TSLangTokenTypes.rightParenthesis)
-                    goto rp4;
+                    goto rp3;
                 else
-                    goto rp5;
+                    goto rp4;
             }
-        rp2:
             DropToken();
 
             if (CurrentToken.Type != TSLangTokenTypes.leftParenthesis)
@@ -119,19 +112,19 @@ namespace Parser
 
                 do
                 {
-            DropToken();
+                    DropToken();
                     if (Done)
                         return;
                 } while (!recoveryPoint.Contains(CurrentToken.Type));
 
                 if (CurrentToken.Type == TSLangTokenTypes.leftParenthesis)
-                    goto rp3;
+                    goto rp2;
                 else if (CurrentToken.Type == TSLangTokenTypes.rightParenthesis)
-                    goto rp4;
+                    goto rp3;
                 else
-                    goto rp5;
+                    goto rp4;
             }
-        rp3:
+        rp2:
             DropToken();
 
             FList();
@@ -149,19 +142,19 @@ namespace Parser
 
                 do
                 {
-            DropToken();
+                    DropToken();
                     if (Done)
                         return;
                 } while (!recoveryPoint.Contains(CurrentToken.Type));
 
                 if (CurrentToken.Type == TSLangTokenTypes.rightParenthesis)
-                    goto rp4;
+                    goto rp3;
                 else
-                    goto rp5;
+                    goto rp4;
             }
-        rp4:
+        rp3:
             DropToken();
-        rp5:
+        rp4:
             if (CurrentToken.Type == TSLangTokenTypes.leftBrace)
             {
                 DropToken();
@@ -229,15 +222,37 @@ namespace Parser
                 DropToken();
 
                 if (CurrentToken.Type != TSLangTokenTypes.leftParenthesis)
+                {
                     SyntaxError("Expected '('");
+
+                    TokenType[] recoveryPoint =
+                    {
+                        TSLangTokenTypes.leftParenthesis,
+                        TSLangTokenTypes.rightParenthesis,
+                    };
+
+                    while (!recoveryPoint.Contains(CurrentToken.Type))
+                    {
+                        DropToken();
+                        if (Done)
+                            return;
+                    }
+
+                    if (CurrentToken.Type == TSLangTokenTypes.rightParenthesis)
+                    {
+                        DropToken();
+                        goto rp1;
+                    }
+                }
                 DropToken();
 
                 Expr();
 
                 if (CurrentToken.Type != TSLangTokenTypes.rightParenthesis)
                     SyntaxError("Expected ')'");
-                DropToken();
+                else DropToken();
 
+            rp1:
                 Stmt();
 
                 if (CurrentToken.Type == TSLangTokenTypes.kw_else)
@@ -254,15 +269,35 @@ namespace Parser
                 DropToken();
 
                 if (CurrentToken.Type != TSLangTokenTypes.leftParenthesis)
+                {
                     SyntaxError("Expected '('");
-                DropToken();
 
+                    TokenType[] recoveryPoint =
+                    {
+                        TSLangTokenTypes.leftParenthesis,
+                        TSLangTokenTypes.rightParenthesis,
+                    };
+
+                    while (!recoveryPoint.Contains(CurrentToken.Type))
+                    {
+                        DropToken();
+                        if (Done)
+                            return;
+                    }
+
+                    if (CurrentToken.Type == TSLangTokenTypes.rightParenthesis)
+                    {
+                        DropToken();
+                        goto rp1;
+                    }
+                }
+                DropToken();
                 Expr();
 
                 if (CurrentToken.Type != TSLangTokenTypes.rightParenthesis)
                     SyntaxError("Expected ')'");
-                DropToken();
-
+                else DropToken();
+            rp1:
                 Stmt();
             }
             else if (CurrentToken.Type == TSLangTokenTypes.kw_for)
@@ -271,29 +306,131 @@ namespace Parser
                 DropToken();
 
                 if (CurrentToken.Type != TSLangTokenTypes.leftParenthesis)
+                {
                     SyntaxError("Expected '('");
+
+                    TokenType[] recoveryPoint =
+                    {
+                        TSLangTokenTypes.leftParenthesis,
+                        TSLangTokenTypes.equals,
+                        TSLangTokenTypes.kw_to,
+                        TSLangTokenTypes.rightParenthesis,
+                    };
+
+                    while (!recoveryPoint.Contains(CurrentToken.Type))
+                    {
+                        DropToken();
+                        if (Done)
+                            return;
+                    }
+
+                    if (CurrentToken.Type == TSLangTokenTypes.equals)
+                        goto rp1;
+                    else if (CurrentToken.Type == TSLangTokenTypes.kw_to)
+                        goto rp2;
+                    else if (CurrentToken.Type == TSLangTokenTypes.rightParenthesis)
+                    {
+                        DropToken();
+                        goto rp3;
+                    }
+                }
                 DropToken();
 
                 if (CurrentToken.Type != TSLangTokenTypes.identifier)
+                {
                     SyntaxError("Expected identifier");
+
+                    TokenType[] recoveryPoint =
+                    {
+                        TSLangTokenTypes.equals,
+                        TSLangTokenTypes.kw_to,
+                        TSLangTokenTypes.rightParenthesis,
+                    };
+
+                    while (!recoveryPoint.Contains(CurrentToken.Type))
+                    {
+                        DropToken();
+                        if (Done)
+                            return;
+                    }
+
+                    if (CurrentToken.Type == TSLangTokenTypes.equals)
+                        goto rp1;
+                    else if (CurrentToken.Type == TSLangTokenTypes.kw_to)
+                        goto rp2;
+                    else if (CurrentToken.Type == TSLangTokenTypes.rightParenthesis)
+                    {
+                        DropToken();
+                        goto rp3;
+                    }
+                }
                 DropToken();
 
                 if (CurrentToken.Type != TSLangTokenTypes.equals)
+                {
                     SyntaxError("Expected '='");
+
+                    TokenType[] recoveryPoint =
+                    {
+                        TSLangTokenTypes.equals,
+                        TSLangTokenTypes.kw_to,
+                        TSLangTokenTypes.rightParenthesis,
+                    };
+
+                    while (!recoveryPoint.Contains(CurrentToken.Type))
+                    {
+                        DropToken();
+                        if (Done)
+                            return;
+                    }
+
+                    if (CurrentToken.Type == TSLangTokenTypes.equals)
+                        goto rp1;
+                    else if (CurrentToken.Type == TSLangTokenTypes.kw_to)
+                        goto rp2;
+                    else if (CurrentToken.Type == TSLangTokenTypes.rightParenthesis)
+                    {
+                        DropToken();
+                        goto rp3;
+                    }
+                }
+            rp1:
                 DropToken();
 
                 Expr();
 
                 if (CurrentToken.Type != TSLangTokenTypes.kw_to)
+                {
                     SyntaxError("Expected 'to'");
+
+                    TokenType[] recoveryPoint =
+                    {
+                        TSLangTokenTypes.kw_to,
+                        TSLangTokenTypes.rightParenthesis,
+                    };
+
+                    while (!recoveryPoint.Contains(CurrentToken.Type))
+                    {
+                        DropToken();
+                        if (Done)
+                            return;
+                    }
+
+                    if (CurrentToken.Type == TSLangTokenTypes.rightParenthesis)
+                    {
+                        DropToken();
+                        goto rp3;
+                    }
+                }
+            rp2:
                 DropToken();
 
                 Expr();
 
                 if (CurrentToken.Type != TSLangTokenTypes.rightParenthesis)
                     SyntaxError("Expected ')'");
-                DropToken();
-
+                else DropToken();
+            rp3:
                 Stmt();
             }
             else if (CurrentToken.Type == TSLangTokenTypes.kw_return)
@@ -305,7 +442,7 @@ namespace Parser
 
                 if (CurrentToken.Type != TSLangTokenTypes.semicolon)
                     SyntaxError("Expected ';'");
-                DropToken();
+                else DropToken();
             }
             else if (CurrentToken.Type == TSLangTokenTypes.leftBrace)
             {
@@ -316,7 +453,7 @@ namespace Parser
 
                 if (CurrentToken.Type != TSLangTokenTypes.rightBrace)
                     SyntaxError("Expected '}'");
-                DropToken();
+                else DropToken();
             }
             else if (CurrentToken.Type == TSLangTokenTypes.kw_def)
             {
@@ -330,7 +467,7 @@ namespace Parser
 
                 if (CurrentToken.Type != TSLangTokenTypes.semicolon)
                     SyntaxError("Expected ';'");
-                DropToken();
+                else DropToken();
             }
             else
             {
@@ -339,7 +476,7 @@ namespace Parser
 
                 if (CurrentToken.Type != TSLangTokenTypes.semicolon)
                     SyntaxError("Expected ';'");
-                DropToken();
+                else DropToken();
             }
         }
 
