@@ -35,6 +35,8 @@ namespace Parser
         /// </summary>
         public bool HasError { get; private set; }
 
+        private Token lastErrorToken;
+
         /// <summary>
         /// Gets whether parsing is done.
         /// </summary>
@@ -53,6 +55,7 @@ namespace Parser
             HasError = false;
             Done = false;
             lastToken = new Token(TSLangTokenTypes.comment, "", 0, 0);
+            lastErrorToken = lastToken;
 
             DropToken();
         }
@@ -95,6 +98,13 @@ namespace Parser
         private void SyntaxError(string message)
         {
             HasError = true;
+            if (lastErrorToken == CurrentToken)
+            {
+                DropToken();
+                return;
+            }
+
+            lastErrorToken = CurrentToken;
 
             errorStream.WriteLine(
                 CurrentToken.Line.ToString() + ":" +

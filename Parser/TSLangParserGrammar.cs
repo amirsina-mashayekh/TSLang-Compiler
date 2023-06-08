@@ -491,13 +491,13 @@ namespace Parser
         {
             if (CurrentToken.Type != TSLangTokenTypes.kw_var)
                 SyntaxError("Expected 'var'");
-            DropToken();
+            else DropToken();
 
             Type();
 
             if (CurrentToken.Type != TSLangTokenTypes.identifier)
                 SyntaxError("Expected identifier");
-            DropToken();
+            else DropToken();
 
             if (CurrentToken.Type == TSLangTokenTypes.equals)
             {
@@ -526,7 +526,7 @@ namespace Parser
 
             if (CurrentToken.Type != TSLangTokenTypes.identifier)
                 SyntaxError("Expected identifier");
-            DropToken();
+            else DropToken();
 
             if (CurrentToken.Type == TSLangTokenTypes.comma)
             {
@@ -609,7 +609,7 @@ namespace Parser
 
                 if (CurrentToken.Type != TSLangTokenTypes.colon)
                     SyntaxError("Expected ':'");
-                DropToken();
+                else DropToken();
 
                 Expr();
             }
@@ -862,6 +862,20 @@ namespace Parser
             else
             {
                 SyntaxError("Expected valid expression");
+
+                TokenType[] recoveryTokens =
+                {
+                    TSLangTokenTypes.semicolon,
+                    TSLangTokenTypes.rightParenthesis,
+                    TSLangTokenTypes.rightBracket,
+                    TSLangTokenTypes.rightBrace,
+                    TSLangTokenTypes.kw_to,
+                    TSLangTokenTypes.comma,
+                };
+                while (!recoveryTokens.Contains(CurrentToken.Type) && !Done)
+                {
+                    DropToken();
+                }
             }
         }
     }
