@@ -35,6 +35,9 @@ namespace Parser
         /// </summary>
         public bool HasError { get; private set; }
 
+        /// <summary>
+        /// Last token which caused syntax error.
+        /// </summary>
         private Token lastErrorToken;
 
         /// <summary>
@@ -65,7 +68,11 @@ namespace Parser
         /// </summary>
         public void Parse()
         {
-            Prog();
+            try
+            {
+                Prog();
+            }
+            catch { }
         }
 
         /// <summary>
@@ -98,9 +105,12 @@ namespace Parser
         private void SyntaxError(string message)
         {
             HasError = true;
+
             if (lastErrorToken == CurrentToken)
             {
                 DropToken();
+                if (Done)
+                    throw new Exception("Reached end of file.");
                 return;
             }
 
