@@ -85,7 +85,7 @@ namespace Tokenizer
                         continue;
                     }
                 }
-                else if (ch == ' ' || ch == '\t')
+                else if (ch is ' ' or '\t')
                 {
                     if (tmpToken.Length == 0)
                     {
@@ -94,7 +94,7 @@ namespace Tokenizer
                         stream.Read();
                         continue;
                     }
-                    else if (tmpToken[0] != '"' && tmpToken[0] != '\'' && tmpToken[0] != '#')
+                    else if (tmpToken[0] is not '"' and not '\'' and not '#')
                     {
                         endOfToken = true;
                     }
