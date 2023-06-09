@@ -35,7 +35,7 @@ namespace Parser
             SymbolType type = TSLangSymbolTypes.invalid_type;
             List<Variable>? parameters = null;
             string? id = null;
-            var prevScope = currentScopeSymbolTable;
+            var prevScope = currentSymTab;
 
             if (CurrentToken.Type != TSLangTokenTypes.kw_def)
             {
@@ -162,15 +162,15 @@ namespace Parser
 
             if (type != TSLangSymbolTypes.invalid_type && parameters is not null && id is not null)
             {
-                if (currentScopeSymbolTable.Exists(id))
+                if (currentSymTab.Exists(id))
                     SemanticError($"Function with name '{id}' already exists in this in current scope");
                 else
                 {
-                    currentScopeSymbolTable.Add(new Function(id, type, parameters));
-                    currentScopeSymbolTable = new(prevScope);
+                    currentSymTab.Add(new Function(id, type, parameters));
+                    currentSymTab = new(prevScope);
                     foreach (ISymbol item in parameters)
                     {
-                        currentScopeSymbolTable.Add(item);
+                        currentSymTab.Add(item);
                     }
                 }
             }
@@ -209,7 +209,7 @@ namespace Parser
                     DropToken();
             }
             
-            currentScopeSymbolTable = prevScope;
+            currentSymTab = prevScope;
         }
 
         /// <summary>
@@ -226,14 +226,14 @@ namespace Parser
                 // *EMPTY*
                 return;
 
-            var tmp = currentScopeSymbolTable;
-            currentScopeSymbolTable = new(tmp);
+            var tmp = currentSymTab;
+            currentSymTab = new(tmp);
 
             Stmt(returnType);
 
             Body(returnType);
 
-            currentScopeSymbolTable = tmp;
+            currentSymTab = tmp;
         }
 
         /// <summary>
@@ -353,6 +353,13 @@ namespace Parser
                 // for ( iden = Expr to Expr ) Stmt
                 DropToken();
 
+                string? id = null;
+                SymbolType typeStart = TSLangSymbolTypes.invalid_type;
+                SymbolType typeEnd;
+                int l = CurrentToken.Line;
+                int c = CurrentToken.Column;
+                var prevScope = currentSymTab;
+
                 if (CurrentToken.Type != TSLangTokenTypes.leftParenthesis)
                 {
                     SyntaxError("Expected '('");
@@ -412,6 +419,10 @@ namespace Parser
                         goto rp3;
                     }
                 }
+                else
+                {
+                    id = CurrentToken.Value;
+                }
                 DropToken();
 
                 if (CurrentToken.Type != TSLangTokenTypes.equals)
@@ -445,7 +456,12 @@ namespace Parser
             rp1:
                 DropToken();
 
-                Expr();
+                typeStart = Expr();
+                if (typeStart != TSLangSymbolTypes.integer_type)
+                {
+                    SemanticError($"Invalid type '{typeStart}' as start of loop range", l, c);
+                    typeStart = TSLangSymbolTypes.invalid_type;
+                }
 
                 if (CurrentToken.Type != TSLangTokenTypes.kw_to)
                 {
@@ -473,13 +489,35 @@ namespace Parser
             rp2:
                 DropToken();
 
-                Expr();
+                typeEnd = Expr();
+                if (typeEnd != TSLangSymbolTypes.integer_type)
+                {
+                    SemanticError($"Invalid type '{typeEnd}' as end of loop range", l, c);
+                    typeEnd = TSLangSymbolTypes.invalid_type;
+                }
 
                 if (CurrentToken.Type != TSLangTokenTypes.rightParenthesis)
                     SyntaxError("Expected ')'");
                 else DropToken();
+
+                if (id is not null && typeStart != TSLangSymbolTypes.invalid_type && typeEnd != TSLangSymbolTypes.invalid_type)
+                {
+                    currentSymTab = new(prevScope);
+                    if (currentSymTab.Exists(id))
+                    {
+                        if (currentSymTab.Get(id).Type != typeStart)
+                            SemanticError("Invalid loop iterator type");
+                    }
+                    else
+                    {
+                        currentSymTab.Add(new Variable(id, typeStart));
+                    }
+                }
+
             rp3:
                 Stmt(returnType);
+
+                currentSymTab = prevScope;
             }
             else if (CurrentToken.Type == TSLangTokenTypes.kw_return)
             {
@@ -564,10 +602,10 @@ namespace Parser
 
             if (type is not null && type != TSLangSymbolTypes.null_type && id is not null)
             {
-                if (currentScopeSymbolTable.Exists(id))
+                if (currentSymTab.Exists(id))
                     SemanticError($"Variable with name '{id}' already exists in current scope");
                 else
-                    currentScopeSymbolTable.Add(new Variable(id, type));
+                    currentSymTab.Add(new Variable(id, type));
             }
 
             if (CurrentToken.Type == TSLangTokenTypes.equals)
@@ -1024,12 +1062,12 @@ namespace Parser
             {
                 // iden
                 var id = CurrentToken.Value;
-                bool found = currentScopeSymbolTable.Exists(id);
+                bool found = currentSymTab.Exists(id);
                 ISymbol? symbol = null;
 
                 if (found)
                 {
-                    symbol = currentScopeSymbolTable.Get(id);
+                    symbol = currentSymTab.Get(id);
                     type = symbol.Type;
                 }
                 else

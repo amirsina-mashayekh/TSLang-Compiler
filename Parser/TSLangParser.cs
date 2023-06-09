@@ -31,12 +31,12 @@ namespace Parser
         /// <summary>
         /// Root symbol table of the code.
         /// </summary>
-        private readonly SymbolTable rootSymbolTable;
+        private readonly SymbolTable rootSymTab;
 
         /// <summary>
         /// Symbol table for current scope.
         /// </summary>
-        private SymbolTable currentScopeSymbolTable;
+        private SymbolTable currentSymTab;
 
         /// <summary>
         /// Gets whether an error occured while parsing the code.
@@ -67,8 +67,8 @@ namespace Parser
             Done = false;
             lastToken = new Token(TSLangTokenTypes.comment, "", 0, 0);
             lastErrorToken = lastToken;
-            rootSymbolTable = new();
-            currentScopeSymbolTable = rootSymbolTable;
+            rootSymTab = new();
+            currentSymTab = rootSymTab;
 
             DropToken();
         }
