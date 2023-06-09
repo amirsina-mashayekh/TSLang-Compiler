@@ -28,8 +28,14 @@ namespace Parser
         /// </summary>
         private Token CurrentToken => lastToken;
 
+        /// <summary>
+        /// Root symbol table of the code.
+        /// </summary>
         private readonly SymbolTable rootSymbolTable;
 
+        /// <summary>
+        /// Symbol table for current scope.
+        /// </summary>
         private SymbolTable currentScopeSymbolTable;
 
         /// <summary>
@@ -127,6 +133,11 @@ namespace Parser
                 message);
         }
 
+        /// <summary>
+        /// Prints semantic error message and its location
+        /// to the provided <see cref="errorStream"/>.
+        /// </summary>
+        /// <param name="message">Message of error.</param>
         private void SemanticError(string message)
         {
             HasError = true;
@@ -138,6 +149,13 @@ namespace Parser
 
         }
 
+        /// <summary>
+        /// Prints semantic error message and its location
+        /// to the provided <see cref="errorStream"/>.
+        /// </summary>
+        /// <param name="message">Message of error.</param>
+        /// <param name="line">Line of error.</param>
+        /// <param name="col">Column of error.</param>
         private void SemanticError(string message, int line, int col)
         {
             HasError = true;

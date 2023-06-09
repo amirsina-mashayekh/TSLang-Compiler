@@ -180,7 +180,7 @@ namespace Parser
             {
                 DropToken();
 
-                Body();
+                Body(type);
                 if (CurrentToken.Type != TSLangTokenTypes.rightBrace)
                     SyntaxError("Expected '}'");
                 else DropToken();
@@ -189,7 +189,14 @@ namespace Parser
             {
                 DropToken();
 
-                Expr();
+                if (type != TSLangSymbolTypes.null_type)
+                {
+                    var t = Expr();
+                    if (t != type)
+                    {
+                        SemanticError($"Expected '{type}' return expression");
+                    }
+                }
 
                 if (CurrentToken.Type != TSLangTokenTypes.semicolon)
                     SyntaxError("Expected ';'");
@@ -212,7 +219,8 @@ namespace Parser
         /// Stmt Body
         /// </code>
         /// </summary>
-        private void Body()
+        /// <param name="returnType">Expected type of return expression for functions.</param>
+        private void Body(SymbolType returnType)
         {
             if (CurrentToken.Type == TSLangTokenTypes.rightBrace)
                 // *EMPTY*
@@ -221,9 +229,9 @@ namespace Parser
             var tmp = currentScopeSymbolTable;
             currentScopeSymbolTable = new(tmp);
 
-            Stmt();
+            Stmt(returnType);
 
-            Body();
+            Body(returnType);
 
             currentScopeSymbolTable = tmp;
         }
@@ -242,7 +250,8 @@ namespace Parser
         /// Expr ;
         /// </code>
         /// </summary>
-        private void Stmt()
+        /// <param name="returnType">Expected type of return expression for functions.</param>
+        private void Stmt(SymbolType returnType)
         {
             if (CurrentToken.Type == TSLangTokenTypes.kw_if)
             {
@@ -274,21 +283,26 @@ namespace Parser
                 }
                 DropToken();
 
-                Expr();
+                var t = Expr();
+
+                if (t != TSLangSymbolTypes.integer_type)
+                {
+                    SemanticError("Condition expression type must be integer");
+                }
 
                 if (CurrentToken.Type != TSLangTokenTypes.rightParenthesis)
                     SyntaxError("Expected ')'");
                 else DropToken();
 
             rp1:
-                Stmt();
+                Stmt(returnType);
 
                 if (CurrentToken.Type == TSLangTokenTypes.kw_else)
                 {
                     // if ( Expr ) Stmt else Stmt
                     DropToken();
 
-                    Stmt();
+                    Stmt(returnType);
                 }
             }
             else if (CurrentToken.Type == TSLangTokenTypes.kw_while)
@@ -320,13 +334,19 @@ namespace Parser
                     }
                 }
                 DropToken();
-                Expr();
+
+                var t = Expr();
+
+                if (t != TSLangSymbolTypes.integer_type)
+                {
+                    SemanticError("Condition expression type must be integer");
+                }
 
                 if (CurrentToken.Type != TSLangTokenTypes.rightParenthesis)
                     SyntaxError("Expected ')'");
                 else DropToken();
             rp1:
-                Stmt();
+                Stmt(returnType);
             }
             else if (CurrentToken.Type == TSLangTokenTypes.kw_for)
             {
@@ -459,14 +479,21 @@ namespace Parser
                     SyntaxError("Expected ')'");
                 else DropToken();
             rp3:
-                Stmt();
+                Stmt(returnType);
             }
             else if (CurrentToken.Type == TSLangTokenTypes.kw_return)
             {
                 // return Expr ;
                 DropToken();
 
-                Expr();
+                if (returnType != TSLangSymbolTypes.null_type)
+                {
+                    var t = Expr();
+                    if (t != returnType)
+                    {
+                        SemanticError($"Expected '{returnType}' return expression");
+                    }
+                }
 
                 if (CurrentToken.Type != TSLangTokenTypes.semicolon)
                     SyntaxError("Expected ';'");
@@ -477,7 +504,7 @@ namespace Parser
                 // { Body }
                 DropToken();
 
-                Body();
+                Body(returnType);
 
                 if (CurrentToken.Type != TSLangTokenTypes.rightBrace)
                     SyntaxError("Expected '}'");
@@ -620,8 +647,8 @@ namespace Parser
         {
             List<SymbolType> list = new();
 
-            if (CurrentToken.Type == TSLangTokenTypes.leftBracket
-                || CurrentToken.Type == TSLangTokenTypes.leftParenthesis)
+            if (CurrentToken.Type == TSLangTokenTypes.rightBracket
+                || CurrentToken.Type == TSLangTokenTypes.rightParenthesis)
             {
                 // *EMPTY*
                 return list;
