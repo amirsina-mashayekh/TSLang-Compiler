@@ -13,6 +13,6 @@
         /// <summary>
         /// Gets type of the symbol.
         /// </summary>
-        public SymbolTable.TSLangTypes Type { get; }
+        public SymbolType Type { get; }
     }
 }

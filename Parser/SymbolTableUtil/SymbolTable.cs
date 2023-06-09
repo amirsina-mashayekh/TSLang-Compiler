@@ -6,16 +6,8 @@
     internal class SymbolTable
     {
         /// <summary>
-        /// Specifies type of a symbol.
+        /// Gets the symbol table of the upper scope.
         /// </summary>
-        public enum TSLangTypes
-        {
-            integer_type,
-            string_type,
-            vector_type,
-            null_type,
-        }
-
         public SymbolTable? UpperScope { get; }
 
         /// <summary>
@@ -50,7 +42,18 @@
         /// False otherwise.
         /// </returns>
         public bool Exists(string identifier)
-            => symbols.ContainsKey(identifier);
+        {
+            bool e;
+            SymbolTable? st = this;
+
+            do
+            {
+                e = st.symbols.ContainsKey(identifier);
+                st = st.UpperScope;
+            } while (!e && st is not null);
+
+            return e;
+        }
 
         /// <summary>
         /// Adds new symbol to the symbol table.
@@ -72,10 +75,16 @@
         /// <exception cref="ArgumentException"></exception>
         public ISymbol Get(string identifier)
         {
-            if (symbols.ContainsKey(identifier))
-                return symbols[identifier];
-            else
-                throw new ArgumentException("Identifier does not exist in the symbol table.");
+            SymbolTable? st = this;
+
+            do
+            {
+                if (st.symbols.ContainsKey(identifier))
+                    return st.symbols[identifier];
+                st = st.UpperScope;
+            } while (st is not null);
+
+            throw new ArgumentException("Identifier does not exist in the symbol table.");
         }
     }
 }

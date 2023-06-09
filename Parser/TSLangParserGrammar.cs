@@ -32,9 +32,10 @@ namespace Parser
         /// </summary>
         private void Func()
         {
-            TSLangTypes? type = null;
+            SymbolType type = TSLangSymbolTypes.invalid_type;
             List<Variable>? parameters = null;
             string? id = null;
+            var prevScope = currentScopeSymbolTable;
 
             if (CurrentToken.Type != TSLangTokenTypes.kw_def)
             {
@@ -159,12 +160,19 @@ namespace Parser
         rp3:
             DropToken();
 
-            if (type is not null && parameters is not null && id is not null)
+            if (type != TSLangSymbolTypes.invalid_type && parameters is not null && id is not null)
             {
                 if (currentScopeSymbolTable.Exists(id))
                     SemanticError($"Function with name '{id}' already exists in this in current scope");
                 else
-                    currentScopeSymbolTable.Add(new Function(id, (TSLangTypes)type, parameters));
+                {
+                    currentScopeSymbolTable.Add(new Function(id, type, parameters));
+                    currentScopeSymbolTable = new(prevScope);
+                    foreach (ISymbol item in parameters)
+                    {
+                        currentScopeSymbolTable.Add(item);
+                    }
+                }
             }
 
         rp4:
@@ -193,6 +201,8 @@ namespace Parser
                 while (CurrentToken.Type != TSLangTokenTypes.kw_def && !Done)
                     DropToken();
             }
+            
+            currentScopeSymbolTable = prevScope;
         }
 
         /// <summary>
@@ -213,9 +223,9 @@ namespace Parser
 
             Stmt();
 
-            currentScopeSymbolTable = tmp;
-
             Body();
+
+            currentScopeSymbolTable = tmp;
         }
 
         /// <summary>
@@ -513,7 +523,7 @@ namespace Parser
 
             var type = Type();
 
-            if (type == TSLangTypes.null_type)
+            if (type == TSLangSymbolTypes.null_type)
                 SemanticError("Cannot define null type variable");
 
             string? id = null;
@@ -525,12 +535,12 @@ namespace Parser
                 DropToken();
             }
 
-            if (type is not null and not TSLangTypes.null_type && id is not null)
+            if (type is not null && type != TSLangSymbolTypes.null_type && id is not null)
             {
                 if (currentScopeSymbolTable.Exists(id))
                     SemanticError($"Variable with name '{id}' already exists in current scope");
                 else
-                    currentScopeSymbolTable.Add(new Variable(id, (TSLangTypes)type));
+                    currentScopeSymbolTable.Add(new Variable(id, type));
             }
 
             if (CurrentToken.Type == TSLangTokenTypes.equals)
@@ -561,7 +571,7 @@ namespace Parser
 
             var type = Type();
 
-            if (type == TSLangTypes.null_type)
+            if (type == TSLangSymbolTypes.null_type)
                 SemanticError("Cannot define null type function parameter");
 
             string? id = null;
@@ -573,9 +583,9 @@ namespace Parser
                 DropToken();
             }
 
-            if (type is not null and not TSLangTypes.null_type && id is not null)
+            if (type is not null && type != TSLangSymbolTypes.null_type && id is not null)
             {
-                list.Add(new Variable (id, (TSLangTypes)type));
+                list.Add(new Variable (id, type));
             }
 
             if (CurrentToken.Type == TSLangTokenTypes.comma)
@@ -606,24 +616,30 @@ namespace Parser
         /// Expr, CList
         /// </code>
         /// </summary>
-        private void CList()
+        private List<SymbolType> CList()
         {
+            List<SymbolType> list = new();
+
             if (CurrentToken.Type == TSLangTokenTypes.leftBracket
                 || CurrentToken.Type == TSLangTokenTypes.leftParenthesis)
             {
                 // *EMPTY*
-                return;
+                return list;
             }
 
-            Expr();
+            var t = Expr();
+            list.Add(t);
 
             if (CurrentToken.Type == TSLangTokenTypes.comma)
             {
                 // Expr, CList
                 DropToken();
 
-                CList();
+                var lst = CList();
+                list.AddRange(lst);
             }
+
+            return list;
         }
 
         /// <summary>
@@ -635,32 +651,32 @@ namespace Parser
         /// null
         /// </code>
         /// </summary>
-        private TSLangTypes? Type()
+        private SymbolType Type()
         {
             if (CurrentToken.Type == TSLangTokenTypes.kw_int)
             {
                 DropToken();
-                return TSLangTypes.integer_type;
+                return TSLangSymbolTypes.integer_type;
             }
             else if (CurrentToken.Type == TSLangTokenTypes.kw_vector)
             {
                 DropToken();
-                return TSLangTypes.vector_type;
+                return TSLangSymbolTypes.vector_type;
             }
             else if (CurrentToken.Type == TSLangTokenTypes.kw_str)
             {
                 DropToken();
-                return TSLangTypes.string_type;
+                return TSLangSymbolTypes.string_type;
             }
             else if (CurrentToken.Type == TSLangTokenTypes.kw_null)
             {
                 DropToken();
-                return TSLangTypes.null_type;
+                return TSLangSymbolTypes.null_type;
             }
             else
             {
                 SyntaxError("Expected type");
-                return null;
+                return TSLangSymbolTypes.invalid_type;
             }
         }
 
@@ -671,23 +687,40 @@ namespace Parser
         /// Expr ? Expr : Expr
         /// </code>
         /// </summary>
-        private void Expr()
+        private SymbolType Expr()
         {
-            LOrExpr();
+            var type = LOrExpr();
 
             while (CurrentToken.Type == TSLangTokenTypes.questionMark)
             {
                 // Expr ? Expr : Expr
+                int l = CurrentToken.Line;
+                int c = CurrentToken.Column;
                 DropToken();
 
-                Expr();
+                if (type != TSLangSymbolTypes.integer_type)
+                    SemanticError("Condition expression type must be integer", l, c);
+
+                var typeL = Expr();
 
                 if (CurrentToken.Type != TSLangTokenTypes.colon)
                     SyntaxError("Expected ':'");
                 else DropToken();
 
-                Expr();
+                var typeR = Expr();
+
+                if (typeL != typeR)
+                {
+                    SemanticError($"Invalid operation: '{type}' ? '{typeL}' : '{typeR}' ");
+                    type = TSLangSymbolTypes.invalid_type;
+                }
+                else
+                {
+                    type = typeL;
+                }
             }
+
+            return type;
         }
 
         /// <summary>
@@ -697,17 +730,35 @@ namespace Parser
         /// Expr || Expr
         /// </code>
         /// </summary>
-        private void LOrExpr()
+        private SymbolType LOrExpr()
         {
-            LAndExpr();
+            var typeL = LAndExpr();
+            var type = typeL;
 
             while (CurrentToken.Type == TSLangTokenTypes.logicalOr)
             {
                 // Expr || Expr
+                int l = CurrentToken.Line;
+                int c = CurrentToken.Column;
+                string op = CurrentToken.Value;
                 DropToken();
 
-                LAndExpr();
+                var typeR = LAndExpr();
+
+                if (typeL != TSLangSymbolTypes.integer_type || typeR != TSLangSymbolTypes.integer_type)
+                {
+                    SemanticError($"Invalid operation: '{typeL}' {op} '{typeR}'", l, c);
+                    type = TSLangSymbolTypes.invalid_type;
+                }
+                else if (type != TSLangSymbolTypes.invalid_type)
+                {
+                    type = typeL;
+                }
+
+                typeL = typeR;
             }
+
+            return type;
         }
 
         /// <summary>
@@ -717,17 +768,35 @@ namespace Parser
         /// Expr && Expr
         /// </code>
         /// </summary>
-        private void LAndExpr()
+        private SymbolType LAndExpr()
         {
-            EqNeqExpr();
+            var typeL = EqNeqExpr();
+            var type = typeL;
 
             while (CurrentToken.Type == TSLangTokenTypes.logicalAnd)
             {
                 // Expr && Expr
+                int l = CurrentToken.Line;
+                int c = CurrentToken.Column;
+                string op = CurrentToken.Value;
                 DropToken();
 
-                EqNeqExpr();
+                var typeR = EqNeqExpr();
+
+                if (typeL != TSLangSymbolTypes.integer_type || typeR != TSLangSymbolTypes.integer_type)
+                {
+                    SemanticError($"Invalid operation: '{typeL}' {op} '{typeR}'", l, c);
+                    type = TSLangSymbolTypes.invalid_type;
+                }
+                else if (type != TSLangSymbolTypes.invalid_type)
+                {
+                    type = typeL;
+                }
+
+                typeL = typeR;
             }
+
+            return type;
         }
 
         /// <summary>
@@ -738,19 +807,37 @@ namespace Parser
         /// Expr != Expr
         /// </code>
         /// </summary>
-        private void EqNeqExpr()
+        private SymbolType EqNeqExpr()
         {
-            CompareExpr();
+            var typeL = CompareExpr();
+            var type = typeL;
 
             while (CurrentToken.Type == TSLangTokenTypes.doubleEquals
                 || CurrentToken.Type == TSLangTokenTypes.notEquals)
             {
                 // Expr == Expr
                 // Expr != Expr
+                int l = CurrentToken.Line;
+                int c = CurrentToken.Column;
+                string op = CurrentToken.Value;
                 DropToken();
 
-                CompareExpr();
+                var typeR = CompareExpr();
+
+                if (typeL != TSLangSymbolTypes.integer_type || typeR != TSLangSymbolTypes.integer_type)
+                {
+                    SemanticError($"Invalid operation: '{typeL}' {op} '{typeR}'", l, c);
+                    type = TSLangSymbolTypes.invalid_type;
+                }
+                else if (type != TSLangSymbolTypes.invalid_type)
+                {
+                    type = typeL;
+                }
+
+                typeL = typeR;
             }
+
+            return type;
         }
 
         /// <summary>
@@ -763,9 +850,10 @@ namespace Parser
         /// Expr &lt;= Expr
         /// </code>
         /// </summary>
-        private void CompareExpr()
+        private SymbolType CompareExpr()
         {
-            AddSubExpr();
+            var typeL = AddSubExpr();
+            var type = typeL;
 
             while (CurrentToken.Type == TSLangTokenTypes.lessThan
                 || CurrentToken.Type == TSLangTokenTypes.greaterThan
@@ -776,10 +864,27 @@ namespace Parser
                 // Expr < Expr
                 // Expr >= Expr
                 // Expr <= Expr
+                int l = CurrentToken.Line;
+                int c = CurrentToken.Column;
+                string op = CurrentToken.Value;
                 DropToken();
 
-                AddSubExpr();
+                var typeR = AddSubExpr();
+
+                if (typeL != TSLangSymbolTypes.integer_type || typeR != TSLangSymbolTypes.integer_type)
+                {
+                    SemanticError($"Invalid operation: '{typeL}' {op} '{typeR}'", l, c);
+                    type = TSLangSymbolTypes.invalid_type;
+                }
+                else if (type != TSLangSymbolTypes.invalid_type)
+                {
+                    type = typeL;
+                }
+
+                typeL = typeR;
             }
+
+            return type;
         }
 
         /// <summary>
@@ -790,19 +895,37 @@ namespace Parser
         /// Expr - Expr
         /// </code>
         /// </summary>
-        private void AddSubExpr()
+        private SymbolType AddSubExpr()
         {
-            MulDivModExpr();
+            var typeL = MulDivModExpr();
+            var type = typeL;
 
             while (CurrentToken.Type == TSLangTokenTypes.plus
                 || CurrentToken.Type == TSLangTokenTypes.minus)
             {
                 // Expr + Expr
                 // Expr - Expr
+                int l = CurrentToken.Line;
+                int c = CurrentToken.Column;
+                string op = CurrentToken.Value;
                 DropToken();
 
-                MulDivModExpr();
+                var typeR = MulDivModExpr();
+
+                if (typeL != typeR)
+                {
+                    SemanticError($"Invalid operation: '{typeL}' {op} '{typeR}'", l, c);
+                    type = TSLangSymbolTypes.invalid_type;
+                }
+                else if (type != TSLangSymbolTypes.invalid_type)
+                {
+                    type = typeL;
+                }
+
+                typeL = typeR;
             }
+
+            return type;
         }
 
         /// <summary>
@@ -814,9 +937,10 @@ namespace Parser
         /// Expr % Expr
         /// </code>
         /// </summary>
-        private void MulDivModExpr()
+        private SymbolType MulDivModExpr()
         {
-            FinalExpr();
+            var typeL = FinalExpr();
+            var type = typeL;
 
             while (CurrentToken.Type == TSLangTokenTypes.asterisk
                 || CurrentToken.Type == TSLangTokenTypes.slash
@@ -825,10 +949,27 @@ namespace Parser
                 // Expr * Expr
                 // Expr / Expr
                 // Expr % Expr
+                int l = CurrentToken.Line;
+                int c = CurrentToken.Column;
+                string op = CurrentToken.Value;
                 DropToken();
 
-                FinalExpr();
+                var typeR = FinalExpr();
+
+                if (typeL != TSLangSymbolTypes.integer_type || typeR != TSLangSymbolTypes.integer_type)
+                {
+                    SemanticError($"Invalid operation: '{typeL}' {op} '{typeR}'", l, c);
+                    type = TSLangSymbolTypes.invalid_type;
+                }
+                else if (type != TSLangSymbolTypes.invalid_type)
+                {
+                    type = typeL;
+                }
+
+                typeL = typeR;
             }
+
+            return type;
         }
 
         /// <summary>
@@ -848,19 +989,43 @@ namespace Parser
         /// ( Expr )
         /// </code>
         /// </summary>
-        private void FinalExpr()
+        private SymbolType FinalExpr()
         {
+            SymbolType type;
+
             if (CurrentToken.Type == TSLangTokenTypes.identifier)
             {
                 // iden
+                var id = CurrentToken.Value;
+                bool found = currentScopeSymbolTable.Exists(id);
+                ISymbol? symbol = null;
+
+                if (found)
+                {
+                    symbol = currentScopeSymbolTable.Get(id);
+                    type = symbol.Type;
+                }
+                else
+                {
+                    SemanticError($"Cannot find variable or function '{id}' in current scope");
+                    type = TSLangSymbolTypes.invalid_type;
+                }
                 DropToken();
 
                 if (CurrentToken.Type == TSLangTokenTypes.leftBracket)
                 {
                     // iden [ Expr ]
+                    type = TSLangSymbolTypes.integer_type;
+
+                    if (found && symbol!.Type != TSLangSymbolTypes.vector_type)
+                    {
+                        SemanticError($"'{id}' is not vector");
+                    }
                     DropToken();
 
-                    Expr();
+                    var indexType = Expr();
+                    if (indexType != TSLangSymbolTypes.integer_type)
+                        SemanticError($"Cannot use expression of type '{indexType}' as vector index");
 
                     if (CurrentToken.Type != TSLangTokenTypes.rightBracket)
                         SyntaxError("Expected ']'");
@@ -869,41 +1034,108 @@ namespace Parser
                     if (CurrentToken.Type == TSLangTokenTypes.equals)
                     {
                         // iden [ Expr ] = Expr
+                        int l = CurrentToken.Line;
+                        int c = CurrentToken.Column;
                         DropToken();
 
-                        Expr();
+                        var assignedType = Expr();
+
+                        if (assignedType != TSLangSymbolTypes.integer_type)
+                            SemanticError($"Cannot assign expression of type '{assignedType}' to a vector member", l, c);
                     }
                 }
                 else if (CurrentToken.Type == TSLangTokenTypes.equals)
                 {
                     // iden = Expr
+                    int l = CurrentToken.Line;
+                    int c = CurrentToken.Column;
                     DropToken();
 
-                    Expr();
+                    var assignedType = Expr();
+
+                    if (found)
+                    {
+                        var t = symbol!.Type;
+                        if (symbol is Function)
+                        {
+                            SemanticError("Cannot assign to a function", l, c);
+                        }
+                        else if (assignedType != t)
+                        {
+                            SemanticError($"Cannot assign expression of type '{assignedType}' to a variable of type '{t}'", l, c);
+                        }
+                    }
+
+                    type = assignedType;
                 }
                 else if (CurrentToken.Type == TSLangTokenTypes.leftParenthesis)
                 {
                     // iden ( CList )
+                    int l = CurrentToken.Line;
+                    int c = CurrentToken.Column;
                     DropToken();
 
-                    CList();
+                    if (found)
+                    {
+                        if (symbol is not Function)
+                        {
+                            SemanticError($"'{id}' is not a function", l, c);
+                        }
+                        else
+                        {
+                            type = symbol!.Type;
+                        }
+                    }
+                    else
+                    {
+                        type = TSLangSymbolTypes.invalid_type;
+                    }
+
+                    var args = CList();
+
+                    if (symbol is Function f)
+                    {
+                        int pc = f.ParametersCount;
+
+                        if (pc != args.Count)
+                        {
+                            SemanticError($"Expected {pc} arguments, got {args.Count}", l, c);
+                        }
+
+                        pc = Math.Min(pc, args.Count);
+
+                        for (int i = 0; i < pc; i++)
+                        {
+                            var et = f.Parameters[i].Type;
+                            if (et != args[i])
+                            {
+                                SemanticError($"Arg{i + 1}: Expected argument of type '{et}', got '{args[i]}'", l, c);
+                            }
+                        }
+                    }
 
                     if (CurrentToken.Type != TSLangTokenTypes.rightParenthesis)
                         SyntaxError("Expected ')'");
                     DropToken();
                 }
             }
-            else if (CurrentToken.Type == TSLangTokenTypes.literal_integer
-                || CurrentToken.Type == TSLangTokenTypes.literal_string_doubleQuote
-                || CurrentToken.Type == TSLangTokenTypes.literal_string_singleQuote)
+            else if (CurrentToken.Type == TSLangTokenTypes.literal_integer)
             {
                 // number
+                type = TSLangSymbolTypes.integer_type;
+                DropToken();
+            }
+            else if (CurrentToken.Type == TSLangTokenTypes.literal_string_doubleQuote
+                || CurrentToken.Type == TSLangTokenTypes.literal_string_singleQuote)
+            {
                 // string
+                type = TSLangSymbolTypes.string_type;
                 DropToken();
             }
             else if (CurrentToken.Type == TSLangTokenTypes.leftBracket)
             {
                 // [ CList ]
+                type = TSLangSymbolTypes.vector_type;
                 DropToken();
 
                 CList();
@@ -919,16 +1151,29 @@ namespace Parser
                 // ! Expr
                 // + Expr
                 // - Expr
+                int l = CurrentToken.Line;
+                int c = CurrentToken.Column;
+                string op = CurrentToken.Value;
                 DropToken();
 
-                Expr();
+                var t = Expr();
+
+                if (t != TSLangSymbolTypes.integer_type)
+                {
+                    SemanticError($"Invalid operation '{op}' on type '{t}'");
+                    type = TSLangSymbolTypes.invalid_type;
+                }
+                else
+                {
+                    type = t;
+                }
             }
             else if (CurrentToken.Type == TSLangTokenTypes.leftParenthesis)
             {
                 // ( Expr )
                 DropToken();
 
-                Expr();
+                type = Expr();
 
                 if (CurrentToken.Type != TSLangTokenTypes.rightParenthesis)
                     SyntaxError("Expected ')'");
@@ -936,6 +1181,8 @@ namespace Parser
             }
             else
             {
+                type = TSLangSymbolTypes.invalid_type;
+
                 SyntaxError("Expected valid expression");
 
                 TokenType[] recoveryTokens =
@@ -952,6 +1199,8 @@ namespace Parser
                     DropToken();
                 }
             }
+
+            return type;
         }
     }
 }

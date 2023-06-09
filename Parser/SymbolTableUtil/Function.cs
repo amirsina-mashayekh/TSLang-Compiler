@@ -15,7 +15,7 @@ namespace Parser.SymbolTableUtil
         /// <summary>
         /// Gets return type of the function.
         /// </summary>
-        public SymbolTable.TSLangTypes Type { get; }
+        public SymbolType Type { get; }
 
         /// <summary>
         /// Gets list of the function parameters.
@@ -33,7 +33,7 @@ namespace Parser.SymbolTableUtil
         /// <param name="identifier">Identifier (name) of the function.</param>
         /// <param name="type">Return type of the function.</param>
         /// <param name="parameters">Array of the function parameters.</param>
-        public Function(string identifier, SymbolTable.TSLangTypes type, Variable[] parameters)
+        public Function(string identifier, SymbolType type, Variable[] parameters)
         {
             Identifier = identifier;
             Type = type;
@@ -46,7 +46,7 @@ namespace Parser.SymbolTableUtil
         /// <param name="identifier">Identifier (name) of the function.</param>
         /// <param name="type">Return type of the function.</param>
         /// <param name="parameters">List of the function parameters.</param>
-        public Function(string identifier, SymbolTable.TSLangTypes type, List<Variable> parameters)
+        public Function(string identifier, SymbolType type, List<Variable> parameters)
         {
             Identifier = identifier;
             Type = type;

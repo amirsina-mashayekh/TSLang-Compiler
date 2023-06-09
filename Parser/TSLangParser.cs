@@ -124,7 +124,7 @@ namespace Parser
             errorStream.WriteLine(
                 CurrentToken.Line.ToString() + ":" +
                 CurrentToken.Column.ToString() + ":\t" +
-               message);
+                message);
         }
 
         private void SemanticError(string message)
@@ -134,7 +134,18 @@ namespace Parser
             errorStream.WriteLine(
                 CurrentToken.Line.ToString() + ":" +
                 CurrentToken.Column.ToString() + ":\t" +
-               message);
+                message);
+
+        }
+
+        private void SemanticError(string message, int line, int col)
+        {
+            HasError = true;
+
+            errorStream.WriteLine(
+                line + ":" +
+                col + ":\t" +
+                message);
 
         }
     }
