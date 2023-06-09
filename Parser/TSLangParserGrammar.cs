@@ -1,4 +1,6 @@
-﻿using Tokenizer;
+﻿using Parser.SymbolTableUtil;
+using Tokenizer;
+using static Parser.SymbolTableUtil.SymbolTable;
 
 namespace Parser
 {
@@ -30,6 +32,10 @@ namespace Parser
         /// </summary>
         private void Func()
         {
+            TSLangTypes? type = null;
+            List<Variable>? parameters = null;
+            string? id = null;
+
             if (CurrentToken.Type != TSLangTokenTypes.kw_def)
             {
                 SyntaxError("Expected 'def'");
@@ -62,7 +68,7 @@ namespace Parser
         rp1:
             DropToken();
 
-            Type();
+            type = Type();
             
             if (CurrentToken.Type != TSLangTokenTypes.identifier)
             {
@@ -89,6 +95,10 @@ namespace Parser
                     goto rp3;
                 else
                     goto rp4;
+            }
+            else
+            {
+                id = CurrentToken.Value;
             }
             DropToken();
 
@@ -121,7 +131,7 @@ namespace Parser
         rp2:
             DropToken();
 
-            FList();
+            parameters = FList();
 
             if (CurrentToken.Type != TSLangTokenTypes.rightParenthesis)
             {
@@ -148,6 +158,15 @@ namespace Parser
             }
         rp3:
             DropToken();
+
+            if (type is not null && parameters is not null && id is not null)
+            {
+                if (currentScopeSymbolTable.Exists(id))
+                    SemanticError($"Function with name '{id}' already exists in this in current scope");
+                else
+                    currentScopeSymbolTable.Add(new Function(id, (TSLangTypes)type, parameters));
+            }
+
         rp4:
             if (CurrentToken.Type == TSLangTokenTypes.leftBrace)
             {
@@ -189,7 +208,12 @@ namespace Parser
                 // *EMPTY*
                 return;
 
+            var tmp = currentScopeSymbolTable;
+            currentScopeSymbolTable = new(tmp);
+
             Stmt();
+
+            currentScopeSymbolTable = tmp;
 
             Body();
         }
@@ -487,11 +511,27 @@ namespace Parser
                 SyntaxError("Expected 'var'");
             else DropToken();
 
-            Type();
+            var type = Type();
 
+            if (type == TSLangTypes.null_type)
+                SemanticError("Cannot define null type variable");
+
+            string? id = null;
             if (CurrentToken.Type != TSLangTokenTypes.identifier)
                 SyntaxError("Expected identifier");
-            else DropToken();
+            else
+            {
+                id = CurrentToken.Value;
+                DropToken();
+            }
+
+            if (type is not null and not TSLangTypes.null_type && id is not null)
+            {
+                if (currentScopeSymbolTable.Exists(id))
+                    SemanticError($"Variable with name '{id}' already exists in current scope");
+                else
+                    currentScopeSymbolTable.Add(new Variable(id, (TSLangTypes)type));
+            }
 
             if (CurrentToken.Type == TSLangTokenTypes.equals)
             {
@@ -510,25 +550,52 @@ namespace Parser
         /// Type iden, FList
         /// </code>
         /// </summary>
-        private void FList()
+        private List<Variable> FList()
         {
+            List<Variable> list = new();
+
             if (CurrentToken.Type == TSLangTokenTypes.rightParenthesis)
                 // *EMPTY*
-                return;
+                return list;
 
-            Type();
 
+            var type = Type();
+
+            if (type == TSLangTypes.null_type)
+                SemanticError("Cannot define null type function parameter");
+
+            string? id = null;
             if (CurrentToken.Type != TSLangTokenTypes.identifier)
                 SyntaxError("Expected identifier");
-            else DropToken();
+            else
+            {
+                id = CurrentToken.Value;
+                DropToken();
+            }
+
+            if (type is not null and not TSLangTypes.null_type && id is not null)
+            {
+                list.Add(new Variable (id, (TSLangTypes)type));
+            }
 
             if (CurrentToken.Type == TSLangTokenTypes.comma)
             {
                 // Type iden, FList
                 DropToken();
 
-                FList();
+                var next = FList();
+                if (next is not null)
+                {
+                    foreach (Variable v in next)
+                    {
+                        if (list.Any(x => x.Identifier == v.Identifier))
+                            SemanticError($"Parameter with name '{v.Identifier}' already exists");
+                        list.Add(v);
+                    }
+                }
             }
+
+            return list;
         }
 
         /// <summary>
@@ -568,18 +635,32 @@ namespace Parser
         /// null
         /// </code>
         /// </summary>
-        private void Type()
+        private TSLangTypes? Type()
         {
-            if (CurrentToken.Type == TSLangTokenTypes.kw_int
-                || CurrentToken.Type == TSLangTokenTypes.kw_vector
-                || CurrentToken.Type == TSLangTokenTypes.kw_str
-                || CurrentToken.Type == TSLangTokenTypes.kw_null)
+            if (CurrentToken.Type == TSLangTokenTypes.kw_int)
             {
                 DropToken();
+                return TSLangTypes.integer_type;
+            }
+            else if (CurrentToken.Type == TSLangTokenTypes.kw_vector)
+            {
+                DropToken();
+                return TSLangTypes.vector_type;
+            }
+            else if (CurrentToken.Type == TSLangTokenTypes.kw_str)
+            {
+                DropToken();
+                return TSLangTypes.string_type;
+            }
+            else if (CurrentToken.Type == TSLangTokenTypes.kw_null)
+            {
+                DropToken();
+                return TSLangTypes.null_type;
             }
             else
             {
                 SyntaxError("Expected type");
+                return null;
             }
         }
 

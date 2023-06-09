@@ -5,7 +5,7 @@ namespace Parser.SymbolTableUtil
     /// <summary>
     /// Represents a function in symbol table.
     /// </summary>
-    internal readonly struct Function : ISymbol
+    internal class Function : ISymbol
     {
         /// <summary>
         /// Gets identifier (name) of the function.

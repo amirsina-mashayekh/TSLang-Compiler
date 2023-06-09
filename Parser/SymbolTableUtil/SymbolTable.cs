@@ -16,6 +16,8 @@
             null_type,
         }
 
+        public SymbolTable? UpperScope { get; }
+
         /// <summary>
         /// Includes symbols of the symbol table.
         /// </summary>
@@ -27,6 +29,16 @@
         public SymbolTable()
         {
             symbols = new();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SymbolTable"/> class.
+        /// </summary>
+        /// <param name="upperScope">The symbol table for the upper scope.</param>
+        public SymbolTable(SymbolTable? upperScope)
+        {
+            symbols = new();
+            UpperScope = upperScope;
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
-﻿using Tokenizer;
+﻿using Parser.SymbolTableUtil;
+using Tokenizer;
 
 namespace Parser
 {
@@ -26,6 +27,10 @@ namespace Parser
         /// Gets current token.
         /// </summary>
         private Token CurrentToken => lastToken;
+
+        private readonly SymbolTable rootSymbolTable;
+
+        private SymbolTable currentScopeSymbolTable;
 
         /// <summary>
         /// Gets whether an error occured while parsing the code.
@@ -56,6 +61,8 @@ namespace Parser
             Done = false;
             lastToken = new Token(TSLangTokenTypes.comment, "", 0, 0);
             lastErrorToken = lastToken;
+            rootSymbolTable = new();
+            currentScopeSymbolTable = rootSymbolTable;
 
             DropToken();
         }
@@ -118,6 +125,17 @@ namespace Parser
                 CurrentToken.Line.ToString() + ":" +
                 CurrentToken.Column.ToString() + ":\t" +
                message);
+        }
+
+        private void SemanticError(string message)
+        {
+            HasError = true;
+
+            errorStream.WriteLine(
+                CurrentToken.Line.ToString() + ":" +
+                CurrentToken.Column.ToString() + ":\t" +
+               message);
+
         }
     }
 }

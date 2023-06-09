@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents a variable in symbol table.
     /// </summary>
-    internal readonly struct Variable : ISymbol
+    internal class Variable : ISymbol
     {
         /// <summary>
         /// Gets identifier (name) of the variable.
