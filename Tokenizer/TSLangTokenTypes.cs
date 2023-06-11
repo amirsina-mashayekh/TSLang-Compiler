@@ -5,134 +5,134 @@
     /// </summary>
     public static class TSLangTokenTypes
     {
-        public static readonly TokenType 
+        public static readonly TokenType
             invalid
             = new("invalid", ""),
-            
-            identifier 
+
+            identifier
             = new("identifier", @"[A-Za-z_][A-Za-z1-9_]*"),
-            
-            literal_integer 
+
+            literal_integer
             = new("literal_integer", @"[0-9]+"),
-            
-            literal_string_singleQuote 
+
+            literal_string_singleQuote
             = new("literal_string_singleQuote", @"'[^'\r\n]*'"),
-            
-            literal_string_doubleQuote 
+
+            literal_string_doubleQuote
             = new("literal_string_doubleQuote", @"""[^""\r\n]*"""),
-            
-            semicolon 
+
+            semicolon
             = new("semicolon", @";"),
-            
-            leftParenthesis 
+
+            leftParenthesis
             = new("leftParenthesis", @"\("),
-            
-            rightParenthesis 
+
+            rightParenthesis
             = new("rightParenthesis", @"\)"),
-            
-            leftBrace 
+
+            leftBrace
             = new("leftBrace", @"\{"),
-            
-            rightBrace 
+
+            rightBrace
             = new("rightBrace", @"\}"),
-            
-            leftBracket 
+
+            leftBracket
             = new("leftBracket", @"\["),
-            
-            rightBracket 
+
+            rightBracket
             = new("rightBracket", @"\]"),
-            
-            lessThan 
+
+            lessThan
             = new("lessThan", @"<"),
-            
-            greaterThan 
+
+            greaterThan
             = new("greaterThan", @">"),
-            
-            lessThanOrEqual 
+
+            lessThanOrEqual
             = new("lessThanOrEqual", @"<="),
-            
-            greaterThanOrEqual 
+
+            greaterThanOrEqual
             = new("greaterThanOrEqual", @">="),
-            
-            equals 
+
+            equals
             = new("equals", @"="),
-            
-            plus 
+
+            plus
             = new("plus", @"\+"),
-            
-            minus 
+
+            minus
             = new("minus", @"\-"),
-            
-            asterisk 
+
+            asterisk
             = new("asterisk", @"\*"),
-            
-            slash 
+
+            slash
             = new("slash", @"\/"),
-            
-            percent 
+
+            percent
             = new("percent", @"\%"),
-            
-            doubleEquals 
+
+            doubleEquals
             = new("doubleEquals", @"=="),
-            
-            notEquals 
+
+            notEquals
             = new("notEquals", @"!="),
-            
-            logicalOr 
+
+            logicalOr
             = new("logicalOr", @"\|\|"),
-            
-            logicalAnd 
+
+            logicalAnd
             = new("logicalAnd", @"&&"),
-            
-            exclamationMark 
+
+            exclamationMark
             = new("exclamationMark", @"!"),
-            
-            questionMark 
+
+            questionMark
             = new("questionMark", @"\?"),
-            
-            colon 
+
+            colon
             = new("colon", @":"),
-            
-            comma 
+
+            comma
             = new("comma", @","),
-            
-            comment 
+
+            comment
             = new("comment", @"#.*"),
-            
-            kw_for 
+
+            kw_for
             = new("kw_for", @"for"),
-            
-            kw_while 
+
+            kw_while
             = new("kw_while", @"while"),
-            
-            kw_if 
+
+            kw_if
             = new("kw_if", @"if"),
-            
-            kw_else 
+
+            kw_else
             = new("kw_else", @"else"),
-            
-            kw_var 
+
+            kw_var
             = new("kw_var", @"var"),
-            
-            kw_def 
+
+            kw_def
             = new("kw_def", @"def"),
-            
-            kw_int 
+
+            kw_int
             = new("kw_int", @"int"),
-            
-            kw_vector 
+
+            kw_vector
             = new("kw_vector", @"vector"),
-            
-            kw_str 
+
+            kw_str
             = new("kw_str", @"str"),
-            
-            kw_null 
+
+            kw_null
             = new("kw_null", @"null"),
-            
-            kw_return 
+
+            kw_return
             = new("kw_return", @"return"),
-            
-            kw_to 
+
+            kw_to
             = new("kw_to", @"to");
     }
 }

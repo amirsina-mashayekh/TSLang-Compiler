@@ -1,6 +1,5 @@
 ﻿using Parser.SymbolTableUtil;
 using Tokenizer;
-using static Parser.SymbolTableUtil.SymbolTable;
 
 namespace Parser
 {
@@ -70,7 +69,7 @@ namespace Parser
             DropToken();
 
             type = Type();
-            
+
             if (CurrentToken.Type != TSLangTokenTypes.identifier)
             {
                 SyntaxError("Expected identifier");
@@ -89,7 +88,7 @@ namespace Parser
                     if (Done)
                         return;
                 } while (!recoveryPoint.Contains(CurrentToken.Type));
-                
+
                 if (CurrentToken.Type == TSLangTokenTypes.leftParenthesis)
                     goto rp2;
                 else if (CurrentToken.Type == TSLangTokenTypes.rightParenthesis)
@@ -208,7 +207,7 @@ namespace Parser
                 while (CurrentToken.Type != TSLangTokenTypes.kw_def && !Done)
                     DropToken();
             }
-            
+
             currentSymTab = prevScope;
         }
 
@@ -294,7 +293,7 @@ namespace Parser
                     SyntaxError("Expected ')'");
                 else DropToken();
 
-            rp1:
+                rp1:
                 Stmt(returnType);
 
                 if (CurrentToken.Type == TSLangTokenTypes.kw_else)
@@ -345,7 +344,7 @@ namespace Parser
                 if (CurrentToken.Type != TSLangTokenTypes.rightParenthesis)
                     SyntaxError("Expected ')'");
                 else DropToken();
-            rp1:
+                rp1:
                 Stmt(returnType);
             }
             else if (CurrentToken.Type == TSLangTokenTypes.kw_for)
@@ -506,7 +505,7 @@ namespace Parser
                     if (currentSymTab.Exists(id))
                     {
                         if (currentSymTab.Get(id).Type != typeStart)
-                            SemanticError("Invalid loop iterator type");
+                            SemanticError("Invalid loop iterator type", l, c);
                     }
                     else
                     {
@@ -650,7 +649,7 @@ namespace Parser
 
             if (type is not null && type != TSLangSymbolTypes.null_type && id is not null)
             {
-                list.Add(new Variable (id, type));
+                list.Add(new Variable(id, type));
             }
 
             if (CurrentToken.Type == TSLangTokenTypes.comma)
